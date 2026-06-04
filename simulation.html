@@ -117,7 +117,28 @@
   .snav-btn.snav-active { background: var(--bg2); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
   .snav-btn.snav-selected { background: var(--bg2); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
   .snav-sep { width: 1px; height: 16px; background: var(--border2); margin: 0 3px; flex-shrink: 0; }
-  .snav-create { color: var(--text); font-weight: 600; }
+  .sections-dropdown {
+    position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12); min-width: 210px; z-index: 800;
+    padding: 6px 0; display: none;
+  }
+  .sections-dropdown.open { display: block; }
+  .sections-dropdown-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 14px; cursor: pointer; font-size: 11px;
+    color: var(--text); font-family: var(--sans); user-select: none;
+    transition: background 0.1s;
+  }
+  .sections-dropdown-item:hover { background: var(--bg3); }
+  .sections-dropdown-item input[type="checkbox"] { accent-color: var(--text); flex-shrink: 0; }
+  .sections-dropdown-label { font-size: 9px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--faint); padding: 6px 14px 2px; font-family: var(--mono); }
+  .snav-create {
+    background: var(--text) !important; color: white !important;
+    border-radius: 6px !important; padding: 5px 12px !important;
+    box-shadow: none !important; font-weight: 500 !important;
+  }
+  .snav-create:hover { opacity: 0.88 !important; background: var(--text) !important; color: white !important; }
 
   /* ── Material dropdown ── */
   .mat-select-wrap { position: relative; user-select: none; }
@@ -348,6 +369,26 @@
   .advanced-body.open { display: flex; }
 
   /* ── Misc ── */
+  /* ── Column picker ── */
+  .col-picker-btn { display:flex; align-items:center; gap:4px; cursor:pointer; border:none; background:none; padding:0; font-family:var(--sans); font-size:10px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; }
+  .col-picker-btn .material-icons { font-size:14px; color:var(--faint); transition:transform 0.15s; }
+  .col-picker-btn.open .material-icons { transform:rotate(180deg); }
+  .col-picker-dropdown {
+    position:absolute; top:calc(100% + 4px); left:0; min-width:180px;
+    background:var(--bg2); border:1px solid var(--border); border-radius:8px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.12); z-index:800; padding:4px 0; display:none;
+  }
+  .col-picker-dropdown.open { display:block; }
+  .col-picker-item { padding:7px 14px; font-size:12px; color:var(--text); cursor:pointer; display:flex; align-items:center; gap:8px; transition:background 0.1s; }
+  .col-picker-item:hover { background:var(--bg3); }
+  .col-picker-item.active { color:var(--faint); cursor:default; }
+  .col-picker-item .material-icons { font-size:14px; color:var(--ok); }
+  .col-picker-category { padding:6px 14px 2px; font-size:9px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--faint); font-family:var(--mono); }
+  .col-picker-divider { height:1px; background:var(--border); margin:4px 0; }
+  .col-picker-item.disabled { color:var(--faint); cursor:not-allowed; }
+  .col-picker-item.disabled:hover { background:none; }
+  .col-picker-item .draft-badge { font-size:9px; font-weight:500; color:var(--muted); background:var(--bg3); padding:1px 6px; border-radius:8px; margin-left:6px; font-family:var(--mono); text-transform:uppercase; letter-spacing:0.05em; }
+
   /* ── Inspect tabs ── */
   .inspect-tab {
     padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 500;
@@ -444,18 +485,37 @@
       <div class="page-title">Simulate</div>
       <span class="modified-chip" id="modified-chip">unsaved changes</span>
     </div>
-    <div class="page-meta" id="page-meta">Baseline · ISAL · Anodes · Live data May 21, 2026</div>
+    <div class="page-meta" id="page-meta">Current Plan · ISAL · Anodes · Live data May 21, 2026</div>
   </div>
   <div class="header-right">
     <div class="expario-nav" id="expario-nav">
+      <!-- Group 1: View + Baseline + experiments -->
       <div class="snav-toggle" id="snav-toggle">
-        <span class="snav-btn snav-active" id="snav-current" style="cursor:default;">Baseline</span>
+        <div style="position:relative;">
+          <button class="snav-btn" id="snav-gear" onclick="toggleSectionsDropdown(event)" style="display:flex;align-items:center;gap:4px;padding:4px 8px;">
+            <span class="material-icons" style="font-size:14px;color:var(--muted);">settings</span>
+            <span style="font-size:11px;color:var(--muted);">View</span>
+          </button>
+          <div class="sections-dropdown" id="sections-dropdown">
+            <div class="sections-dropdown-label">Visible sections</div>
+            <label class="sections-dropdown-item"><input type="checkbox" id="sec-cover" checked onchange="toggleSection('cover',this.checked)"/> Cover projection</label>
+            <label class="sections-dropdown-item"><input type="checkbox" id="sec-inventory" checked onchange="toggleSection('inventory',this.checked)"/> Average inventory</label>
+            <label class="sections-dropdown-item"><input type="checkbox" id="sec-consumption" checked onchange="toggleSection('consumption',this.checked)"/> Consumption</label>
+            <label class="sections-dropdown-item"><input type="checkbox" id="sec-inspect" checked onchange="toggleSection('inspect',this.checked)"/> Inspect a run</label>
+            <label class="sections-dropdown-item"><input type="checkbox" id="sec-breakdown" checked onchange="toggleSection('breakdown',this.checked)"/> Anodes breakdown</label>
+          </div>
+        </div>
         <div class="snav-sep"></div>
-        <button class="snav-btn" id="snav-all" onclick="snavAll()" style="display:none;">Saved experiments (0)</button>
-        <div class="snav-sep"></div>
-        <button class="snav-btn snav-create" id="snav-create" onclick="startCreateExperiment()">+ Create Experiment</button>
-
+        <span class="snav-btn snav-active" id="snav-current" style="cursor:default;">Current Plan</span>
       </div>
+
+      <!-- Group 2: Saved experiments -->
+      <div class="snav-toggle" id="snav-saved-group" style="display:none;">
+        <button class="snav-btn" id="snav-all" onclick="snavAll()">Saved experiments (0)</button>
+      </div>
+
+      <!-- Group 3: Create experiment -->
+      <button class="snav-btn snav-create" id="snav-create" onclick="startCreateExperiment()">+ Create Experiment</button>
     </div>
   </div>
 </div>
@@ -700,6 +760,11 @@
     <!-- Default: baseline -->
     <div id="view-current">
 
+      <!-- Current Plan title -->
+      <div style="margin-bottom:10px;">
+        <span style="font-size:13px;font-weight:500;color:var(--text);">Current Plan</span>
+      </div>
+
       <!-- Current KPIs -->
       <div class="kpi-row" style="margin-bottom:10px;">
         <div class="kpi danger">
@@ -759,7 +824,7 @@
       <div class="chart-card" style="margin-top:10px;">
         <div class="chart-card-title">
           <span>Anodes breakdown — days of supply by type</span>
-          <span class="chart-card-meta">baseline</span>
+          <span class="chart-card-meta">current plan</span>
         </div>
         <table style="width:100%;border-collapse:collapse;font-size:11px;">
           <thead>
@@ -821,7 +886,13 @@
 
         <!-- Current col -->
         <div class="result-col">
-          <div class="result-col-header" style="display:flex;align-items:center;height:36px;">Baseline</div>
+          <div class="result-col-header" style="display:flex;align-items:center;height:36px;position:relative;">
+            <button class="col-picker-btn" id="col-left-btn" onclick="toggleColPicker('left',event)">
+              <span id="col-left-name" style="font-size:12px;">Current Plan</span>
+              <span class="material-icons">expand_more</span>
+            </button>
+            <div class="col-picker-dropdown" id="col-left-dropdown"></div>
+          </div>
           <div class="compare-kpi-row">
             <div class="kpi danger">
               <div class="kpi-lbl">Days of supply</div>
@@ -846,9 +917,13 @@
         <!-- Experiment col -->
         <div class="result-col">
           <div class="result-col-header experiment-col" style="display:flex;align-items:center;justify-content:space-between;height:36px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span id="experiment-col-name">Experiment 1</span>
+            <div style="display:flex;align-items:center;gap:8px;position:relative;">
+              <button class="col-picker-btn" id="col-right-btn" onclick="toggleColPicker('right',event)" style="color:var(--text);">
+                <span id="experiment-col-name" style="font-size:12px;">Experiment 1</span>
+                <span class="material-icons">expand_more</span>
+              </button>
               <span id="expario-seed" style="font-size:9px;color:var(--faint);font-family:var(--mono);">seed —</span>
+              <div class="col-picker-dropdown" id="col-right-dropdown"></div>
             </div>
             <div style="display:flex;align-items:center;gap:4px;">
               <button class="btn-icon-ghost" data-tip="Remove experiment" onclick="deleteExperiment()" ><span class="material-icons">delete_outline</span></button>
@@ -931,17 +1006,18 @@
 
       <!-- Stochastic charts -->
       <!-- Combined cover projection -->
-      <div class="chart-card" style="margin-top:10px;">
+      <div class="chart-card" style="margin-top:10px;" id="sec-cover-panel">
         <div class="chart-card-title" style="display:flex;align-items:center;justify-content:space-between;">
-          <span>Cover projection — Baseline vs Experiment</span>
+          <span>Cover projection — Current Plan vs Experiment</span>
           <div style="display:flex;align-items:center;gap:12px;font-size:10px;color:var(--muted);">
-            <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:16px;height:0;border-bottom:2px dashed rgba(150,155,165,0.8);vertical-align:middle;"></span>Baseline</span>
+            <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:16px;height:0;border-bottom:2px dashed rgba(150,155,165,0.8);vertical-align:middle;"></span>Current Plan</span>
             <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:16px;height:2px;background:#1A2333;vertical-align:middle;"></span>Experiment</span>
           </div>
         </div>
         <div style="position:relative;height:200px;"><canvas id="chart-compare-combined"></canvas></div>
       </div>
 
+      <div id="sec-inventory-panel">
       <div style="margin-top:16px;padding-top:12px;display:flex;align-items:center;gap:8px;">
         <span style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);">Experiment results</span>
         <span id="stoch-exp-name" style="font-size:10px;font-family:var(--mono);color:var(--faint);">Experiment 1</span>
@@ -954,6 +1030,8 @@
         </div>
         <div style="position:relative;height:200px;"><canvas id="chart-stoch-inventory"></canvas></div>
       </div>
+      </div><!-- /sec-inventory-panel -->
+      <div id="sec-consumption-panel">
       <div class="chart-card" style="margin-top:10px;">
         <div class="chart-card-title">
           <span>Consumption — Plan vs Stochastic</span>
@@ -962,7 +1040,9 @@
         <div style="position:relative;height:160px;"><canvas id="chart-stoch-consumption"></canvas></div>
       </div>
 
+      </div><!-- /sec-consumption-panel -->
       <!-- Inspect a run -->
+      <div id="sec-inspect-panel">
       <div class="chart-card" style="margin-top:10px;margin-bottom:10px;" id="inspect-panel">
         <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onclick="toggleInspect()">
           <div style="display:flex;align-items:center;gap:10px;">
@@ -1007,6 +1087,8 @@
         </div>
       </div>
 
+      </div><!-- /sec-inspect-panel -->
+      <div id="sec-breakdown-panel">
       <!-- Anodes breakdown table -->
       <div class="chart-card" style="margin-top:10px;">
         <div class="chart-card-title">
@@ -1065,6 +1147,7 @@
       </div>
       </div>
 
+      </div><!-- /sec-breakdown-panel -->
     </div><!-- /view-compare -->
 
     <!-- Experiment only view -->
@@ -1184,7 +1267,7 @@
 <div class="confirm-modal-overlay" id="confirm-modal">
   <div class="confirm-modal">
     <div class="confirm-modal-title" id="confirm-modal-title">Run experiment?</div>
-    <div class="confirm-modal-sub" id="confirm-modal-sub">Review changes from baseline before running.</div>
+    <div class="confirm-modal-sub" id="confirm-modal-sub">Review changes from current plan before running.</div>
     <div class="confirm-diff" id="confirm-diff-content">
       <div style="color:var(--faint);font-style:italic;font-size:11px;">No changes from baseline.</div>
     </div>
@@ -1462,6 +1545,7 @@
     closeModal();
     document.getElementById('experiment-col-name').textContent = name;
     var lpl = document.getElementById('left-panel-exp-label'); if (lpl) lpl.textContent = name;
+    if (activeExperimentId) markColOptionSaved(activeExperimentId, name);
     runSim();
   }
 
@@ -1568,6 +1652,8 @@
       activeExperimentId = expId;
       document.getElementById('experiment-col-name').textContent = expName;
       var lpl = document.getElementById('left-panel-exp-label'); if (lpl) lpl.textContent = expName;
+      registerColOption(expId, expName);
+      _colRight = expId;
       const diffLabel = document.getElementById('experiment-col-name-diff');
       if (diffLabel) diffLabel.textContent = expName;
       const seed = Math.floor(Math.random() * 999999);
@@ -1667,8 +1753,12 @@
         if (lbl) lbl.textContent = 'Run simulation';
       }
     } else {
-      const expCount = [...sel].filter(s => s !== 'current').length;
-      if (expCount >= MAX_SELECTED) return;
+      const expIds = [...sel].filter(s => s !== 'current');
+      if (expIds.length >= 1) {
+        // LIFO: remove oldest from selection only (keep its pill in the nav)
+        const oldestId = expIds[0];
+        sel.delete(oldestId);
+      }
       sel.add(id);
       switchToExperiment(id);
     }
@@ -1703,14 +1793,25 @@
     btn.id = 'snav-' + id;
     btn.textContent = name;
     btn.onclick = () => snavSelect(id);
-    const firstSep = toggle.querySelector('.snav-sep');
-    if (firstSep) toggle.insertBefore(btn, firstSep);
-    else toggle.appendChild(btn);
-    const count = document.querySelectorAll('[id^="snav-exp"]').length;
-    if (count >= MAX_SELECTED) {
-      const cb = document.getElementById('snav-create');
-      if (cb) { cb.disabled = true; cb.style.opacity = '0.35'; cb.style.cursor = 'not-allowed'; }
+    // Insert at the end of experiment pills (before closing of toggle div)
+    // to preserve creation order: Current Plan → Exp 1 → Exp 2 → ...
+    const currentBtn = document.getElementById('snav-current');
+    if (currentBtn) {
+      // Find the last experiment button and insert after it
+      const allExpBtns = toggle.querySelectorAll('[id^="snav-exp"]');
+      if (allExpBtns.length > 0) {
+        const lastBtn = allExpBtns[allExpBtns.length - 1];
+        if (lastBtn.nextSibling) toggle.insertBefore(btn, lastBtn.nextSibling);
+        else toggle.appendChild(btn);
+      } else {
+        // No experiments yet — insert right after snav-current
+        if (currentBtn.nextSibling) toggle.insertBefore(btn, currentBtn.nextSibling);
+        else toggle.appendChild(btn);
+      }
+    } else {
+      toggle.appendChild(btn);
     }
+    // LIFO — create button always enabled
   }
 
   function updateCompareLayout() {
@@ -1730,15 +1831,9 @@
       }
     }
 
-    if (expIds.length >= 2) {
-      grid.className = 'results-grid compare-3';
-      if (exp2Col) exp2Col.style.display = 'flex';
-      const btn2 = document.getElementById('snav-' + expIds[1]);
-      if (btn2) document.getElementById('experiment2-col-name').textContent = btn2.textContent;
-    } else {
-      grid.className = 'results-grid compare';
-      if (exp2Col) exp2Col.style.display = 'none';
-    }
+    // Always 2 columns: Current Plan + 1 experiment
+    grid.className = 'results-grid compare';
+    if (exp2Col) exp2Col.style.display = 'none';
   }
 
   function startCreateExperiment() {
@@ -1928,10 +2023,13 @@
 
   function updateSavedExperimentsBtn() {
     const btn = document.getElementById('snav-all');
+    const group = document.getElementById('snav-saved-group');
     if (!btn) return;
     const count = window._savedExperiments.length;
-    btn.style.display = count === 0 ? 'none' : '';
+    const visible = count > 0;
     btn.textContent = 'Saved experiments (' + count + ')';
+    if (group) group.style.display = visible ? 'flex' : 'none';
+    btn.style.display = visible ? '' : 'none';
   }
 
   function openExperimentsModal() {
@@ -2147,7 +2245,7 @@
 
     // Update page meta
     document.getElementById('page-meta').textContent =
-      `Baseline · ISAL · ${level === 'category' ? 'Anodes' : 'Anodes › ' + d.label} · Live data May 21, 2026`;
+      `Current Plan · ISAL · ${level === 'category' ? 'Anodes' : 'Anodes › ' + d.label} · Live data May 21, 2026`;
 
     // Update chart title
     document.querySelector('#view-current .chart-card-title span:first-child').textContent =
@@ -3027,6 +3125,203 @@
   }
 
   renderPertChips();
+
+  // ── Section visibility ─────────────────────────────────────────────────────
+  var _sectionMap = {
+    cover:       'sec-cover-panel',
+    inventory:   'sec-inventory-panel',
+    consumption: 'sec-consumption-panel',
+    inspect:     'sec-inspect-panel',
+    breakdown:   'sec-breakdown-panel'
+  };
+
+  function toggleSectionsDropdown(e) {
+    e.stopPropagation();
+    var dd = document.getElementById('sections-dropdown');
+    dd.classList.toggle('open');
+  }
+
+  document.addEventListener('click', function(e) {
+    var dd = document.getElementById('sections-dropdown');
+    if (dd && !dd.contains(e.target) && e.target.id !== 'snav-gear') {
+      dd.classList.remove('open');
+    }
+  });
+
+  function toggleSection(key, visible) {
+    var panel = document.getElementById(_sectionMap[key]);
+    if (panel) panel.style.display = visible ? '' : 'none';
+    saveSectionPrefs();
+  }
+
+  function saveSectionPrefs() {
+    var prefs = {};
+    Object.keys(_sectionMap).forEach(function(k) {
+      var cb = document.getElementById('sec-' + k);
+      if (cb) prefs[k] = cb.checked;
+    });
+    try { localStorage.setItem('rta_section_prefs', JSON.stringify(prefs)); } catch(e) {}
+  }
+
+  function loadSectionPrefs() {
+    try {
+      var saved = localStorage.getItem('rta_section_prefs');
+      if (!saved) return;
+      var prefs = JSON.parse(saved);
+      Object.keys(prefs).forEach(function(k) {
+        var cb = document.getElementById('sec-' + k);
+        if (cb) {
+          cb.checked = prefs[k];
+          toggleSection(k, prefs[k]);
+        }
+      });
+    } catch(e) {}
+  }
+
+  // Load prefs on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    loadSectionPrefs();
+    renderPertChips();
+  });
+
+
+  // ── Column picker ──────────────────────────────────────────────────────────
+  // Available slots: 'baseline' + any saved/active experiment ids
+  var _colLeft = 'baseline';
+  var _colRight = null;
+
+  // Option schema: { id, label, saved, material, horizon }
+  var _colOptions = [
+    { id: 'baseline', label: 'Current Plan', saved: true, material: 'Anodes', horizon: '214' }
+  ];
+
+  function registerColOption(id, label, saved, material, horizon) {
+    var existing = _colOptions.find(function(o) { return o.id === id; });
+    if (!existing) {
+      _colOptions.push({ id: id, label: label, saved: !!saved, material: material || currentMaterial(), horizon: horizon || currentHorizon() });
+    } else {
+      existing.label = label;
+      if (saved !== undefined) existing.saved = !!saved;
+    }
+  }
+
+  function markColOptionSaved(id, newLabel) {
+    var opt = _colOptions.find(function(o) { return o.id === id; });
+    if (opt) { opt.saved = true; if (newLabel) opt.label = newLabel; }
+  }
+
+  function currentMaterial() {
+    var el = document.querySelector('.mat-chip-active, .mat-select-display .mat-badge');
+    return el ? el.textContent.trim() : 'Anodes';
+  }
+
+  function currentHorizon() {
+    var el = document.getElementById('horizon-input') || document.querySelector('input[value="214"]');
+    return el ? el.value : '214';
+  }
+
+  function toggleColPicker(side, e) {
+    e.stopPropagation();
+    var btn = document.getElementById('col-' + side + '-btn');
+    var dd = document.getElementById('col-' + side + '-dropdown');
+    if (!btn || !dd) return;
+    var isOpen = dd.classList.contains('open');
+    document.querySelectorAll('.col-picker-dropdown').forEach(function(d) { d.classList.remove('open'); });
+    document.querySelectorAll('.col-picker-btn').forEach(function(b) { b.classList.remove('open'); });
+    if (!isOpen) {
+      renderColPickerDropdown(side);
+      dd.classList.add('open');
+      btn.classList.add('open');
+    }
+  }
+
+  document.addEventListener('click', function() {
+    document.querySelectorAll('.col-picker-dropdown').forEach(function(d) { d.classList.remove('open'); });
+    document.querySelectorAll('.col-picker-btn').forEach(function(b) { b.classList.remove('open'); });
+  });
+
+  function renderColPickerDropdown(side) {
+    var dd = document.getElementById('col-' + side + '-dropdown');
+    if (!dd) return;
+    var currentId = side === 'left' ? _colLeft : _colRight;
+    var activeMat = _colOptions.find(function(o) { return o.id === (side === 'left' ? _colRight : _colLeft); });
+    var activeMaterial = activeMat ? activeMat.material : null;
+    dd.innerHTML = '';
+
+    function addCategory(label) {
+      var cat = document.createElement('div');
+      cat.className = 'col-picker-category';
+      cat.textContent = label;
+      dd.appendChild(cat);
+    }
+
+    function addDivider() {
+      var div = document.createElement('div');
+      div.className = 'col-picker-divider';
+      dd.appendChild(div);
+    }
+
+    function addItem(opt) {
+      var isActive = opt.id === currentId;
+      var isSameMaterial = !activeMaterial || opt.material === activeMaterial || opt.id === 'baseline';
+      var isDisabled = !isSameMaterial;
+      var item = document.createElement('div');
+      item.className = 'col-picker-item' + (isActive ? ' active' : '') + (isDisabled ? ' disabled' : '');
+      var check = document.createElement('span');
+      check.className = 'material-icons';
+      check.style.opacity = isActive ? '1' : '0';
+      check.textContent = 'check';
+      item.appendChild(check);
+      var labelSpan = document.createElement('span');
+      labelSpan.textContent = opt.label;
+      item.appendChild(labelSpan);
+      if (!opt.saved && !isDisabled) {
+        var badge = document.createElement('span');
+        badge.className = 'draft-badge';
+        badge.textContent = 'unsaved';
+        item.appendChild(badge);
+      }
+      if (isDisabled) {
+        item.title = 'Different material — cannot compare';
+      }
+      if (!isActive && !isDisabled) {
+        item.addEventListener('click', (function(s, id) { return function(e) { e.stopPropagation(); selectColOption(s, id); }; })(side, opt.id));
+      }
+      dd.appendChild(item);
+    }
+
+    // Unsaved experiments (excluding baseline)
+    var unsaved = _colOptions.filter(function(o) { return o.id !== 'baseline' && !o.saved; });
+    if (unsaved.length > 0) {
+      addCategory('Unsaved');
+      unsaved.forEach(addItem);
+      addDivider();
+    }
+
+    // Saved (baseline + saved experiments)
+    var saved = _colOptions.filter(function(o) { return o.saved; });
+    if (saved.length > 0) {
+      addCategory('Saved');
+      saved.forEach(addItem);
+    }
+  }
+
+  function selectColOption(side, id) {
+    var opt = _colOptions.find(function(o) { return o.id === id; });
+    if (!opt) return;
+    if (side === 'left') {
+      _colLeft = id;
+      var nameEl = document.getElementById('col-left-name');
+      if (nameEl) nameEl.textContent = opt.label;
+    } else {
+      _colRight = id;
+      var nameEl = document.getElementById('experiment-col-name');
+      if (nameEl) nameEl.textContent = opt.label;
+    }
+    document.querySelectorAll('.col-picker-dropdown').forEach(function(d) { d.classList.remove('open'); });
+    document.querySelectorAll('.col-picker-btn').forEach(function(b) { b.classList.remove('open'); });
+  }
+
 </script>
 
 
