@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Optimize — ISAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:        #F5F6F8;
+    --bg2:       #FFFFFF;
+    --bg3:       #ECEEF2;
+    --fill:      #E8EAF0;
+    --border:    #DDE1E8;
+    --border2:   #C8CDD8;
+    --text:      #1A2333;
+    --muted:     #6B7A94;
+    --faint:     #9AA3B4;
+    --ok:        #1A6E38;   --ok-bg:   #EBF5EF;
+    --warn:      #8A5800;   --warn-bg: #FEF8EC;
+    --danger:    #B02818;   --danger-bg: #FDECEA;
+    --modified:  #185FA5;   --modified-bg: #E6F1FB;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+    --topbar-h: 45px;
+    --subheader-h: 48px;
+    --header-total: 93px;
+    --left-w: 320px;
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 13px; }
+
+  /* ── Topbar ── */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-h);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; background: var(--bg2); border-bottom: 1px solid var(--border);
+    z-index: 200;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 20px; }
+  .topbar-logo { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+  .topbar-sub  { font-size: 11px; color: var(--faint); font-family: var(--mono); }
+  .nav-item { padding: 5px 12px; border-radius: 6px; font-size: 12px; color: var(--muted); cursor: pointer; border: none; background: none; font-family: var(--sans); transition: all 0.15s; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: var(--bg3); color: var(--text); font-weight: 500; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .timestamp { font-size: 11px; color: var(--faint); font-family: var(--mono); }
+
+  /* ── Subheader ── */
+  .page-header {
+    position: fixed; top: var(--topbar-h); left: 0; right: 0; height: var(--subheader-h);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; background: var(--bg); border-bottom: 1px solid var(--border);
+    z-index: 190;
+  }
+  .subheader-title { font-size: 18px; font-weight: 600; color: var(--text); line-height: 1; }
+  .subheader-meta  { font-size: 11px; color: var(--faint); font-family: var(--mono); }
+  .snav-btn:disabled { opacity: 0.35 !important; cursor: not-allowed !important; }
+  .run-opt-btn {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 20px; border-radius: 8px; border: none;
+    background: var(--text); color: white;
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  .run-opt-btn:hover { opacity: 0.85; }
+  .run-opt-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .action-bar {
+    position: fixed; bottom: 0; left: 0; width: var(--left-w);
+    padding: 8px 16px 16px;
+    background: linear-gradient(to bottom, transparent, var(--bg) 30%);
+    z-index: 100;
+  }
+
+  /* ── Layout ── */
+  .content-area {
+    margin-top: var(--header-total);
+    display: block;
+  }
+
+  /* ── Left panel ── */
+  .left-panel {
+    width: var(--left-w);
+    position: fixed; top: var(--header-total); bottom: 0; left: 0;
+    overflow-y: auto;
+    padding: 12px 16px calc(72px + 16px) 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    background: var(--bg);
+  }
+
+  /* ── Input groups ── */
+  .input-group { background: var(--bg2); border-radius: 10px; }
+  .ig-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; cursor: pointer; user-select: none;
+  }
+  .ig-title { font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .ig-chev  { font-size: 11px; color: var(--faint); transition: transform 0.2s; }
+  .ig-chev.open { transform: rotate(0deg); }
+  .ig-body  { padding: 0 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+
+  .ir       { display: flex; flex-direction: column; gap: 3px; }
+  .ir-label { font-size: 11px; color: var(--muted); }
+  .ir-field { display: flex; align-items: center; gap: 6px; }
+  .ir-field input[type="number"], .ir-field input[type="text"], .ir-field select {
+    flex: 1; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg); font-size: 12px; color: var(--text); font-family: var(--mono);
+    outline: none; transition: border-color 0.15s;
+  }
+  .ir-field input:focus { border-color: var(--text); }
+  .ir-baseline { font-size: 10px; color: var(--faint); font-family: var(--mono); }
+
+  /* ── Outcome selector ── */
+  .outcome-option {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg); cursor: pointer; transition: all 0.15s;
+  }
+  .outcome-option:hover { border-color: var(--border2); }
+  .outcome-option.selected { border-color: var(--text); background: var(--bg2); box-shadow: 0 0 0 1px var(--text); }
+  .outcome-option input[type="radio"] { margin-top: 2px; accent-color: var(--text); flex-shrink: 0; }
+  .outcome-label { font-size: 12px; font-weight: 500; color: var(--text); }
+  .outcome-desc  { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .outcome-target { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+  .outcome-target input { width: 70px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 5px; font-size: 11px; font-family: var(--mono); background: var(--bg2); color: var(--text); outline: none; }
+  .outcome-target span { font-size: 11px; color: var(--muted); }
+
+  /* ── Parameter checklist ── */
+
+
+  /* ── Unconstrained notice ── */
+  .unconstrained-notice {
+    font-size: 10px; color: var(--faint); font-family: var(--mono);
+    padding: 6px 10px; background: var(--bg3); border-radius: 5px;
+    text-align: center;
+  }
+
+  /* ── Mat selector ── */
+  .mat-selector { display: flex; gap: 6px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .mat-chip { padding: 4px 12px; border-radius: 5px; font-size: 11px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--bg3); color: var(--muted); transition: all 0.15s; }
+  .mat-chip:hover { border-color: var(--border2); color: var(--text); }
+  .mat-chip.active { background: var(--bg2); color: var(--text); border-color: var(--border2); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+  /* ── Right panel ── */
+  .right-panel {
+    margin-left: var(--left-w);
+    padding: 16px 24px 32px;
+    display: flex; flex-direction: column; gap: 10px;
+    min-height: calc(100vh - var(--header-total));
+    box-sizing: border-box;
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; text-align: center; padding: 60px 40px;
+  }
+  .empty-icon { font-size: 40px; color: var(--faint); }
+  .empty-title { font-size: 15px; font-weight: 500; color: var(--text); }
+  .empty-desc  { font-size: 12px; color: var(--muted); max-width: 340px; line-height: 1.6; }
+  .empty-steps { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; text-align: left; }
+  .empty-step  { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: var(--muted); }
+  .empty-step-num { width: 20px; height: 20px; border-radius: 50%; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: var(--text); flex-shrink: 0; }
+
+  /* ── Tooltips ── */
+  [data-tip] { position: relative; }
+  [data-tip]::after {
+    content: attr(data-tip); position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: #1A2333; color: #fff; font-size: 10px; font-family: var(--sans);
+    white-space: nowrap; padding: 4px 8px; border-radius: 5px;
+    pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 9999;
+  }
+  [data-tip]:hover::after { opacity: 1; }
+
+  /* ── btn-icon-ghost ── */
+  .btn-icon-ghost {
+    width: 28px; height: 28px; border-radius: 6px; border: none; background: var(--bg2);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--muted); flex-shrink: 0; transition: all 0.15s; padding: 0;
+  }
+  .btn-icon-ghost:hover { background: var(--bg3); color: var(--text); }
+  .btn-icon-ghost .material-icons { font-size: 16px; }
+
+  /* ── Results ── */
+  .results-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .results-title { font-size: 12px; font-weight: 600; color: var(--text); }
+  .results-actions { display: flex; align-items: center; gap: 6px; }
+  .sep { width: 1px; height: 16px; background: var(--border2); }
+  .save-btn {
+    padding: 5px 14px; border-radius: 6px; border: none;
+    background: var(--text); color: white;
+    font-family: var(--sans); font-size: 12px; font-weight: 500; cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .save-btn:hover { opacity: 0.85; }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+  .kpi { background: var(--bg2); border-radius: 8px; padding: 10px 12px; position: relative; }
+  .kpi.danger { border-left: 3px solid var(--danger); }
+  .kpi.warn   { border-left: 3px solid var(--warn); }
+  .kpi.ok     { border-left: 3px solid var(--ok); }
+  .kpi-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; margin-bottom: 4px; }
+  .kpi-val { font-size: 22px; font-weight: 300; font-family: var(--mono); color: var(--text); line-height: 1; }
+  .kpi-val .u { font-size: 11px; color: var(--muted); }
+  .kpi-delta { font-size: 10px; font-family: var(--mono); margin-top: 3px; }
+  .kpi-delta.neg  { color: var(--danger); }
+  .kpi-delta.pos  { color: var(--ok); }
+  .kpi-delta.ok   { color: var(--ok); }
+  .kpi-delta.warn { color: var(--warn); }
+  .kpi-delta.neu  { color: var(--muted); }
+  .kpi-range { font-size: 10px; font-family: var(--mono); color: var(--faint); margin-top: 2px; }
+  .compare-kpi-row .kpi-val { font-size: 18px; }
+  .compare-kpi-row .kpi-lbl { font-size: 9px; }
+
+  .chart-card { background: var(--bg2); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+  .chart-card-title { font-size: 11px; font-weight: 500; margin-bottom: 10px; display: flex; justify-content: space-between; }
+  .chart-card-title span { font-size: 11px; font-weight: 500; color: var(--text); }
+  .chart-card-meta { font-size: 10px; color: var(--faint); font-family: var(--mono); }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 600; display: none; align-items: center; justify-content: center; }
+  .modal { background: var(--bg2); border-radius: 12px; padding: 24px; width: 380px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+  .modal-title { font-size: 15px; font-weight: 500; }
+  .modal-body { display: flex; flex-direction: column; gap: 6px; }
+  .modal-label { font-size: 11px; color: var(--muted); }
+  .modal-input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: var(--sans); outline: none; width: 100%; }
+  .modal-input:focus { border-color: var(--text); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-btn-cancel { padding: 7px 14px; border-radius: 6px; border: 1px solid var(--border); background: none; font-family: var(--sans); font-size: 12px; cursor: pointer; color: var(--muted); }
+  .modal-btn-save { padding: 7px 14px; border-radius: 6px; border: none; background: var(--text); color: white; font-family: var(--sans); font-size: 12px; cursor: pointer; font-weight: 500; }
+  .confirm-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 600; display: none; align-items: flex-start; justify-content: center; }
+  /* ── Snav (matches simulate) ── */
+  .expario-nav { display: flex; align-items: center; gap: 8px; }
+  .snav-toggle { display: flex; align-items: center; gap: 2px; background: var(--bg3); border-radius: 7px; padding: 3px; }
+  .snav-btn { padding: 4px 11px; border-radius: 5px; font-size: 11px; cursor: pointer; border: none; background: none; color: var(--muted); font-family: var(--sans); font-weight: 500; transition: all 0.15s; white-space: nowrap; }
+  .snav-btn:hover { background: var(--bg2); color: var(--text); }
+  .snav-btn.snav-active { background: var(--bg2); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .snav-sep { width: 1px; height: 16px; background: var(--border2); margin: 0 3px; flex-shrink: 0; }
+  .snav-create { background: var(--text) !important; color: white !important; border-radius: 6px !important; padding: 5px 12px !important; font-weight: 500 !important; }
+  .snav-create:hover { opacity: 0.88 !important; }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+
+  /* ── Results grid (matches simulate exactly) ── */
+  .results-grid { display: grid; gap: 10px; width: 100%; }
+  .results-grid.compare { grid-template-columns: 1fr 1fr; }
+  .results-grid > .result-col { min-width: 0; }
+  .result-col { display: flex; flex-direction: column; gap: 8px; }
+  .result-col-header { font-size: 10px; font-weight: 500; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; padding-bottom: 4px; display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
+  .result-col-header.proposal { color: var(--text); }
+  .compare-kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+  .compare-kpi-row .kpi-val { font-size: 18px; }
+  .compare-kpi-row .kpi-lbl { font-size: 9px; }
+
+  /* ── Parameter change highlights ── */
+  .param-change-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; border-radius: 6px; background: var(--modified-bg);
+    border: 1px solid var(--modified); font-size: 11px;
+  }
+  .param-change-label { color: var(--text); font-weight: 500; }
+  .param-change-vals  { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; }
+  .param-change-old   { color: var(--muted); text-decoration: line-through; }
+  .param-change-arrow { color: var(--faint); }
+  .param-change-new   { color: var(--modified); font-weight: 500; }
+
+  .results-section-label {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--faint); margin-bottom: 8px;
+  }
+
+  /* ── Mat selector (matches simulate) ── */
+  .mat-select-wrap { position: relative; }
+  .mat-select-display {
+    display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+    cursor: pointer; border-bottom: 1px solid var(--border);
+    background: var(--bg2); user-select: none;
+  }
+  .mat-select-display:hover { background: var(--bg3); }
+  .mat-badge { display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 3px; font-family: var(--mono);
+    font-size: 10px; font-weight: 600; background: #3A4252; color: #FFFFFF; flex-shrink: 0; }
+  .mat-badge.at-risk { background: var(--danger); }
+  .mat-badge.at-warn { background: var(--warn); }
+  .mat-select-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+  .mat-select-status { font-size: 10px; font-weight: 500; padding: 1px 7px; border-radius: 10px; }
+  .mat-select-status.danger { background: var(--danger-bg); color: var(--danger); }
+  .mat-select-status.warn   { background: var(--warn-bg);   color: var(--warn); }
+  .mat-select-status.ok     { background: var(--ok-bg);     color: var(--ok); }
+  .mat-chev { font-size: 14px; color: var(--faint); transition: transform 0.2s; }
+  .mat-dropdown {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 300;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 0 0 8px 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: none;
+  }
+  .mat-dropdown.open { display: block; }
+  .mat-option { display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer; }
+  .mat-option:hover { background: var(--bg3); }
+  .mat-option-label { display: flex; flex-direction: column; gap: 1px; }
+  .mat-option-label span:first-child { font-size: 12px; font-weight: 500; color: var(--text); }
+
+  /* ── Vessel cards (matches simulate) ── */
+  .vessel-card-a { display:flex; align-items:center; gap:10px; background:var(--bg); border-radius:8px; padding:9px 12px; cursor:pointer; transition:background 0.15s; border:1px solid transparent; }
+  .vessel-card-a:hover { background:var(--bg3); }
+  .vessel-card-a-left { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+  .vessel-card-a-date { font-size:13px; font-weight:500; font-family:var(--mono); color:var(--text); }
+  .vessel-card-a-unc  { font-size:9px; color:var(--danger); margin-left:4px; }
+  .vessel-card-a-supplier { font-size:11px; color:var(--muted); }
+  .vessel-card-a-right { display:flex; flex-direction:column; align-items:flex-end; gap:3px; flex-shrink:0; }
+  .vessel-card-a-qty  { font-size:12px; font-weight:500; font-family:var(--mono); color:var(--text); }
+  .vessel-card-a-conf { display:flex; align-items:center; gap:4px; font-size:10px; color:var(--muted); }
+  .vessel-conf-dot    { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+
+  /* ── Outcome option ── */
+  .outcome-option {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg); cursor: pointer; transition: all 0.15s;
+  }
+  .outcome-option:hover { border-color: var(--border2); }
+  .outcome-option.selected { border-color: var(--text); background: var(--bg2); box-shadow: 0 0 0 1px var(--text); }
+  .outcome-option input[type="radio"] { margin-top: 2px; accent-color: var(--text); flex-shrink: 0; }
+  .outcome-label { font-size: 12px; font-weight: 500; color: var(--text); }
+  .outcome-desc  { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .outcome-target { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+  .outcome-target input { width: 70px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 5px; font-size: 11px; font-family: var(--mono); background: var(--bg2); color: var(--text); outline: none; }
+  .outcome-target span { font-size: 11px; color: var(--muted); }
+
+  /* ── Parameter toggle rows ── */
+  .param-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg); cursor: pointer; transition: all 0.15s; gap: 10px;
+  }
+  .param-item:hover { border-color: var(--border2); }
+  .param-item.active { border-color: var(--text); background: var(--bg2); box-shadow: 0 0 0 1px var(--text); }
+  .param-item.locked { opacity: 1; }
+  .param-left  { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .param-label { font-size: 11px; font-weight: 500; color: var(--text); }
+  .param-current { font-size: 10px; color: var(--faint); font-family: var(--mono); margin-top: 1px; }
+  .param-toggle {
+    width: 24px; height: 14px; border-radius: 7px;
+    cursor: pointer; position: relative; transition: background 0.15s;
+    flex-shrink: 0; background: var(--text); display: inline-block; overflow: hidden;
+  }
+  .param-toggle.off { background: var(--border2); }
+  .toggle-knob {
+    display: block; position: absolute; width: 9px; height: 9px;
+    border-radius: 50%; background: white; top: 2.5px; left: 2.5px;
+    transition: transform 0.15s; pointer-events: none;
+  }
+  .param-toggle:not(.off) .toggle-knob { transform: translateX(10px); }
+  .param-toggle.off .toggle-knob { transform: translateX(0); }
+  .unconstrained-notice { font-size: 10px; color: var(--faint); font-family: var(--mono); padding: 6px 10px; background: var(--bg3); border-radius: 5px; text-align: center; }
+
+  /* ── ir-field-wrap ── */
+  .ir-field-wrap { position: relative; display: flex; align-items: center; flex: 1; }
+  .ir-field-wrap input { flex: 1; padding-right: 28px; }
+  .ir-unit-inside { position: absolute; right: 8px; font-size: 10px; color: var(--faint); font-family: var(--mono); pointer-events: none; }
+  .ir-baseline { font-size: 10px; color: var(--faint); font-family: var(--mono); }
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-logo">ISAL Console</span>
+    <button class="nav-item" onclick="location.href='dashboard.html'">Dashboard</button>
+    <button class="nav-item" onclick="location.href='simulation.html'">Simulate</button>
+    <button class="nav-item active">Optimize</button>
+    <button class="nav-item" onclick="location.href='charter.html'">Charter</button>
+  </div>
+  <div class="topbar-right">
+    <span class="timestamp">Current Plan · ISAL · Anodes · Live data May 21, 2026</span>
+  </div>
+</div>
+
+<!-- Subheader -->
+<div class="page-header">
+  <div>
+    <div class="subheader-title">Optimize</div>
+    <div class="subheader-meta" id="page-meta">Current Plan · ISAL · Anodes · Live data May 21, 2026</div>
+  </div>
+  <div class="header-right" id="opt-nav">
+    <!-- Group 1: Current Plan + Proposal in one pill group -->
+    <div class="snav-toggle" id="opt-snav-toggle">
+      <span class="snav-btn snav-active" id="opt-current-pill" style="cursor:default;">Current Plan</span>
+      <span class="snav-btn" id="opt-proposal-pill" style="display:none;cursor:default;">Proposal</span>
+    </div>
+    <!-- Group 2: Saved optimizations (appears after first save) -->
+    <div class="snav-toggle" id="opt-saved-group" style="display:none;">
+      <button class="snav-btn" id="opt-saved-btn" onclick="openSavedOptimizations()">Saved optimizations (0)</button>
+    </div>
+    <!-- Group 3: New Optimization button -->
+    <button class="snav-btn snav-create" id="opt-new-btn" onclick="newOptimization()">+ New Optimization</button>
+  </div>
+</div>
+
+<div class="content-area">
+
+  <!-- Left panel -->
+  <div class="left-panel">
+
+    <!-- Material selector (matches simulate) -->
+    <div class="mat-select-wrap" id="mat-select-wrap" style="background:var(--bg2);border-radius:10px;overflow:visible;">
+      <div class="mat-select-display" onclick="toggleMatDropdown()">
+        <span class="mat-badge at-risk" id="mat-badge">C</span>
+        <span class="mat-select-name" id="mat-select-name">Anodes</span>
+        <span class="mat-select-status danger" id="mat-select-status">at risk</span>
+        <span class="mat-chev material-icons" id="mat-chev">expand_more</span>
+      </div>
+      <div class="mat-dropdown" id="mat-dropdown">
+        <div class="mat-option" onclick="selectMaterial(event,'anodes','C','at-risk','at risk','danger')">
+          <span class="mat-badge at-risk">C</span>
+          <div class="mat-option-label"><span>Anodes</span><span class="mat-select-status danger" style="font-size:10px;">at risk</span></div>
+        </div>
+        <div class="mat-option" onclick="selectMaterial(event,'alumina','Al','at-warn','below target','warn')">
+          <span class="mat-badge at-warn">Al</span>
+          <div class="mat-option-label"><span>Alumina</span><span class="mat-select-status warn" style="font-size:10px;">below target</span></div>
+        </div>
+        <div class="mat-option" onclick="selectMaterial(event,'fluoride','F','','within range','ok')">
+          <span class="mat-badge">F</span>
+          <div class="mat-option-label"><span>Fluoride</span><span class="mat-select-status ok" style="font-size:10px;">within range</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Outcome -->
+    <div class="input-group">
+      <div class="ig-header" onclick="toggleGroup(this)">
+        <span class="ig-title">Outcome</span>
+        <span class="ig-chev open">▾</span>
+      </div>
+      <div class="ig-body">
+        <label class="outcome-option" id="outcome-dos" onclick="selectOutcome('dos')">
+          <input type="radio" name="outcome"/>
+          <div>
+            <div class="outcome-label">Maximize days of supply</div>
+            <div class="outcome-desc">Find parameters that maximize inventory cover</div>
+            <div class="outcome-target" style="display:none;">
+              <span>Target ≥</span>
+              <input type="number" value="45" id="target-dos" onclick="event.stopPropagation()"/>
+              <span>days</span>
+            </div>
+          </div>
+        </label>
+        <label class="outcome-option" id="outcome-sl" onclick="selectOutcome('sl')">
+          <input type="radio" name="outcome"/>
+          <div>
+            <div class="outcome-label">Maximize service level</div>
+            <div class="outcome-desc">Minimize stockout probability across all runs</div>
+            <div class="outcome-target" style="display:none;">
+              <span>Target ≥</span>
+              <input type="number" value="95" id="target-sl" onclick="event.stopPropagation()"/>
+              <span>%</span>
+            </div>
+          </div>
+        </label>
+        <label class="outcome-option" id="outcome-twc" onclick="selectOutcome('twc')">
+          <input type="radio" name="outcome"/>
+          <div>
+            <div class="outcome-label">Minimize TWC</div>
+            <div class="outcome-desc">Reduce working capital while maintaining service level</div>
+            <div class="outcome-target" style="display:none;">
+              <span>Service level ≥</span>
+              <input type="number" value="80" id="target-twc-sl" onclick="event.stopPropagation()"/>
+              <span>%</span>
+            </div>
+          </div>
+        </label>
+        <label class="outcome-option" id="outcome-demurrage" onclick="selectOutcome('demurrage')">
+          <input type="radio" name="outcome"/>
+          <div>
+            <div class="outcome-label">Minimize demurrage</div>
+            <div class="outcome-desc">Reduce vessel waiting costs at port</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Parameters -->
+    <div class="input-group">
+      <div class="ig-header" onclick="toggleGroup(this)">
+        <span class="ig-title">Parameters</span>
+        <span class="ig-chev open">▾</span>
+      </div>
+      <div class="ig-body">
+        <div style="font-size:11px;color:var(--muted);">Toggle off to lock a parameter.</div>
+        <div class="unconstrained-notice" id="unconstrained-notice">No parameters selected — optimizer will use all levers</div>
+
+        <div style="font-size:9px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--faint);">Inventory</div>
+        <div class="param-item" id="param-inv-min" onclick="toggleParamRow('param-inv-min')">
+          <div class="param-left"><div>
+            <div class="param-label">Inventory target — min</div>
+            <div class="param-current">Current: 30d</div>
+          </div></div>
+          <div class="param-toggle off" role="switch" aria-checked="false" onclick="toggleParam(this,'param-inv-min')"><span class="toggle-knob"></span></div>
+        </div>
+        <div class="param-item" id="param-inv-max" onclick="toggleParamRow('param-inv-max')">
+          <div class="param-left"><div>
+            <div class="param-label">Inventory target — max</div>
+            <div class="param-current">Current: 60d</div>
+          </div></div>
+          <div class="param-toggle off" role="switch" aria-checked="false" onclick="toggleParam(this,'param-inv-max')"><span class="toggle-knob"></span></div>
+        </div>
+
+        <div style="font-size:9px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--faint);">Vessels</div>
+        <div class="param-item" id="param-vessel-qty" onclick="toggleParamRow('param-vessel-qty')">
+          <div class="param-left"><div>
+            <div class="param-label">Vessel quantities</div>
+            <div class="param-current">13,500 · 11,200 · 14,000 · 12,800</div>
+          </div></div>
+          <div class="param-toggle off" role="switch" aria-checked="false" onclick="toggleParam(this,'param-vessel-qty')"><span class="toggle-knob"></span></div>
+        </div>
+        <div class="param-item" id="param-vessel-freq" onclick="toggleParamRow('param-vessel-freq')">
+          <div class="param-left"><div>
+            <div class="param-label">Vessel frequency</div>
+            <div class="param-current">4 vessels / horizon</div>
+          </div></div>
+          <div class="param-toggle off" role="switch" aria-checked="false" onclick="toggleParam(this,'param-vessel-freq')"><span class="toggle-knob"></span></div>
+        </div>
+
+        <div style="font-size:9px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--faint);">Consumption</div>
+        <div class="param-item" id="param-consumption" onclick="toggleParamRow('param-consumption')">
+          <div class="param-left"><div>
+            <div class="param-label">Daily consumption plan</div>
+            <div class="param-current">Current: 320 anodes/d</div>
+          </div></div>
+          <div class="param-toggle off" role="switch" aria-checked="false" onclick="toggleParam(this,'param-consumption')"><span class="toggle-knob"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vessels -->
+    <div class="input-group">
+      <div class="ig-header" onclick="toggleGroup(this)">
+        <span class="ig-title">Scheduled vessels</span>
+        <span class="ig-chev open">▾</span>
+      </div>
+      <div class="ig-body" style="gap:6px;">
+        <div id="vessel-summary" style="display:flex;flex-direction:column;gap:6px;">
+          <div class="vessel-card-a">
+            <div class="vessel-card-a-left">
+              <div class="vessel-card-a-date">Jun 14<span class="vessel-card-a-unc">± 18d</span></div>
+              <div class="vessel-card-a-supplier">Supplier 1</div>
+            </div>
+            <div class="vessel-card-a-right">
+              <span class="vessel-card-a-qty">13,500 anodes</span>
+              <span class="vessel-card-a-conf"><span class="vessel-conf-dot" style="background:var(--danger);"></span>Low confidence</span>
+            </div>
+          </div>
+          <div class="vessel-card-a">
+            <div class="vessel-card-a-left">
+              <div class="vessel-card-a-date">Jul 8</div>
+              <div class="vessel-card-a-supplier">Supplier 2</div>
+            </div>
+            <div class="vessel-card-a-right">
+              <span class="vessel-card-a-qty">11,200 anodes</span>
+              <span class="vessel-card-a-conf"><span class="vessel-conf-dot" style="background:var(--warn);"></span>Medium</span>
+            </div>
+          </div>
+          <div class="vessel-card-a">
+            <div class="vessel-card-a-left">
+              <div class="vessel-card-a-date">Jul 28</div>
+              <div class="vessel-card-a-supplier">Supplier 1</div>
+            </div>
+            <div class="vessel-card-a-right">
+              <span class="vessel-card-a-qty">14,000 anodes</span>
+              <span class="vessel-card-a-conf"><span class="vessel-conf-dot" style="background:var(--ok);"></span>High</span>
+            </div>
+          </div>
+          <div class="vessel-card-a">
+            <div class="vessel-card-a-left">
+              <div class="vessel-card-a-date">Aug 19</div>
+              <div class="vessel-card-a-supplier">Supplier 3</div>
+            </div>
+            <div class="vessel-card-a-right">
+              <span class="vessel-card-a-qty">12,800 anodes</span>
+              <span class="vessel-card-a-conf"><span class="vessel-conf-dot" style="background:var(--ok);"></span>High</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /left-panel -->
+
+  <!-- Right panel -->
+  <div class="right-panel" id="right-panel">
+
+    <!-- Current state (shown by default) -->
+    <div id="current-state-panel" style="display:flex;flex-direction:column;gap:10px;">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);">Current Plan</div>
+          <div style="font-size:11px;color:var(--faint);font-family:var(--mono);margin-top:2px;">Anodes · ISAL · Live data May 21, 2026</div>
+        </div>
+      </div>
+
+      <!-- Current KPIs -->
+      <div class="kpi-row">
+        <div class="kpi danger">
+          <div class="kpi-lbl">Days of supply</div>
+          <div class="kpi-val">24<span class="u">d</span></div>
+          <div class="kpi-delta neg">↓ below min target (30d)</div>
+          <div class="kpi-range">p05–p95: 18 – 31d</div>
+        </div>
+        <div class="kpi danger">
+          <div class="kpi-lbl">Service level</div>
+          <div class="kpi-val">78<span class="u">%</span></div>
+          <div class="kpi-delta neg">↓ vessels delayed</div>
+          <div class="kpi-range">p05–p95: 59 – 92%</div>
+        </div>
+        <div class="kpi warn">
+          <div class="kpi-lbl">TWC</div>
+          <div class="kpi-val">$18.4<span class="u">M</span></div>
+          <div class="kpi-delta neu">stable vs. last month</div>
+          <div class="kpi-range">p05–p95: $16.1 – $20.8M</div>
+        </div>
+        <div class="kpi warn">
+          <div class="kpi-lbl">Demurrage</div>
+          <div class="kpi-val">$240<span class="u">k</span></div>
+          <div class="kpi-delta neu">stable vs. last month</div>
+          <div class="kpi-range">p05–p95: $0 – $520k</div>
+        </div>
+      </div>
+
+      <!-- Current cover chart -->
+      <div class="chart-card">
+        <div class="chart-card-title">
+          <span>Cover projection — Current Plan</span>
+          <span class="chart-card-meta">Days of supply · Anodes</span>
+        </div>
+        <div style="position:relative;height:200px;"><canvas id="chart-current-opt"></canvas></div>
+      </div>
+
+    </div><!-- /current-state-panel -->
+
+    <!-- Results (shown after run) -->
+    <div id="results-panel" style="display:none;flex-direction:column;gap:0;">
+
+
+
+      <!-- 2-column KPI comparison — matches simulate exactly -->
+      <div class="results-grid compare">
+
+        <!-- Current Plan col -->
+        <div class="result-col">
+          <div class="result-col-header">Current Plan</div>
+          <div class="compare-kpi-row">
+            <div class="kpi danger">
+              <div class="kpi-lbl">Days of supply</div>
+              <div class="kpi-val">24 <span class="u">d</span></div>
+            </div>
+            <div class="kpi danger">
+              <div class="kpi-lbl">Service level</div>
+              <div class="kpi-val">78 <span class="u">%</span></div>
+            </div>
+            <div class="kpi warn">
+              <div class="kpi-lbl">TWC</div>
+              <div class="kpi-val">$18.4 <span class="u">M</span></div>
+            </div>
+            <div class="kpi warn">
+              <div class="kpi-lbl">Demurrage</div>
+              <div class="kpi-val">$240 <span class="u">k</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Proposal col -->
+        <div class="result-col">
+          <div class="result-col-header proposal" style="display:flex;align-items:center;justify-content:space-between;height:36px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span id="proposal-col-name">Proposal</span>
+              <span style="font-size:10px;color:var(--modified);font-family:var(--mono);font-weight:500;text-transform:none;letter-spacing:0;">3 changes</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <button class="btn-icon-ghost" data-tip="Discard" onclick="discardOptimization()"><span class="material-icons">delete_outline</span></button>
+              <div style="width:1px;height:14px;background:var(--border2);margin:0 4px;flex-shrink:0;"></div>
+              <button class="btn-icon-ghost" data-tip="Share"><span class="material-icons">ios_share</span></button>
+              <button class="save-btn" onclick="saveOptimization()">Save</button>
+            </div>
+          </div>
+          <div class="compare-kpi-row">
+            <div class="kpi ok" style="position:relative;">
+              <span class="kpi-delta ok" style="position:absolute;top:8px;right:10px;font-size:9px;">↑ +14d</span>
+              <div class="kpi-lbl">Days of supply</div>
+              <div class="kpi-val">38 <span class="u">d</span></div>
+            </div>
+            <div class="kpi ok" style="position:relative;">
+              <span class="kpi-delta ok" style="position:absolute;top:8px;right:10px;font-size:9px;">↑ +13%</span>
+              <div class="kpi-lbl">Service level</div>
+              <div class="kpi-val">91 <span class="u">%</span></div>
+            </div>
+            <div class="kpi warn" style="position:relative;">
+              <span class="kpi-delta warn" style="position:absolute;top:8px;right:10px;font-size:9px;">↑ +$0.8M</span>
+              <div class="kpi-lbl">TWC</div>
+              <div class="kpi-val">$19.2 <span class="u">M</span></div>
+            </div>
+            <div class="kpi ok" style="position:relative;">
+              <span class="kpi-delta ok" style="position:absolute;top:8px;right:10px;font-size:9px;">↓ −$60k</span>
+              <div class="kpi-lbl">Demurrage</div>
+              <div class="kpi-val">$180 <span class="u">k</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /results-grid -->
+
+      <!-- Parameter changes + cover chart -->
+      <div style="display:flex;flex-direction:column;gap:10px;padding:16px;">
+
+        <!-- Parameter changes -->
+        <div>
+          <div class="results-section-label">Proposed parameter changes</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div class="param-change-row">
+              <span class="param-change-label">Inventory target — min</span>
+              <div class="param-change-vals"><span class="param-change-old">30d</span><span class="param-change-arrow">→</span><span class="param-change-new">38d</span></div>
+            </div>
+            <div class="param-change-row">
+              <span class="param-change-label">Vessel quantities — Jun 14</span>
+              <div class="param-change-vals"><span class="param-change-old">13,500</span><span class="param-change-arrow">→</span><span class="param-change-new">16,000</span></div>
+            </div>
+            <div class="param-change-row">
+              <span class="param-change-label">Vessel quantities — Aug 19</span>
+              <div class="param-change-vals"><span class="param-change-old">12,800</span><span class="param-change-arrow">→</span><span class="param-change-new">15,200</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Outcome chart (shown first, type depends on selected outcome) -->
+        <div class="chart-card" id="outcome-chart-card">
+          <div class="chart-card-title">
+            <span id="outcome-chart-title">Outcome — Current Plan vs Proposal</span>
+            <span class="chart-card-meta" id="outcome-chart-meta"></span>
+          </div>
+          <div style="position:relative;height:180px;"><canvas id="chart-outcome"></canvas></div>
+        </div>
+
+        <!-- Cover projection (always shown below) -->
+        <div class="chart-card">
+          <div class="chart-card-title">
+            <span>Cover projection — Current Plan vs Proposal</span>
+            <div style="display:flex;align-items:center;gap:12px;font-size:10px;color:var(--muted);">
+              <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:16px;height:0;border-bottom:2px dashed rgba(150,155,165,0.8);vertical-align:middle;"></span>Current Plan</span>
+              <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:16px;height:2px;background:#1A2333;vertical-align:middle;"></span>Proposal</span>
+            </div>
+          </div>
+          <div style="position:relative;height:180px;"><canvas id="chart-opt-cover"></canvas></div>
+        </div>
+
+      </div>
+
+    </div><!-- /results-panel -->
+
+  </div><!-- /right-panel -->
+
+</div><!-- /content-area -->
+
+<!-- Fixed action bar -->
+<div class="action-bar">
+  <button class="run-opt-btn" id="run-btn" onclick="runOptimizer()" disabled>
+    <span class="material-icons" style="font-size:16px;">auto_fix_high</span>
+    Run optimizer
+  </button>
+</div>
+
+
+
+<!-- Running overlay -->
+<div id="running-overlay" style="display:none;position:fixed;inset:0;background:rgba(248,249,251,0.85);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <span class="material-icons" style="font-size:40px;color:var(--faint);animation:spin 1.2s linear infinite;">sync</span>
+  <div style="font-size:14px;font-weight:500;color:var(--text);">Running optimizer…</div>
+  <div style="font-size:11px;color:var(--muted);font-family:var(--mono);" id="running-status">Initialising search space</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  // ── Material selector ──────────────────────────────────────────────
+  function toggleMatDropdown() {
+    var dd = document.getElementById('mat-dropdown');
+    dd.classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#mat-select-wrap')) {
+      var dd = document.getElementById('mat-dropdown');
+      if (dd) dd.classList.remove('open');
+    }
+  });
+  function selectMaterial(e, mat, sym, riskClass, statusText, statusType) {
+    e.stopPropagation();
+    document.getElementById('mat-badge').textContent = sym;
+    document.getElementById('mat-badge').className = 'mat-badge' + (riskClass ? ' ' + riskClass : '');
+    document.getElementById('mat-select-name').textContent = sym === 'C' ? 'Anodes' : sym === 'Al' ? 'Alumina' : 'Fluoride';
+    document.getElementById('mat-select-status').textContent = statusText;
+    document.getElementById('mat-select-status').className = 'mat-select-status ' + statusType;
+    document.getElementById('mat-dropdown').classList.remove('open');
+  }
+
+  // ── Outcome selector ──────────────────────────────────────────────
+  function selectOutcome(key) {
+    document.querySelectorAll('.outcome-option').forEach(function(o) {
+      o.classList.remove('selected');
+      var t = o.querySelector('.outcome-target');
+      if (t) t.style.display = 'none';
+      var r = o.querySelector('input[type="radio"]');
+      if (r) r.checked = false;
+    });
+    var selected = document.getElementById('outcome-' + key);
+    if (selected) {
+      selected.classList.add('selected');
+      var r = selected.querySelector('input[type="radio"]');
+      if (r) r.checked = true;
+      var t = selected.querySelector('.outcome-target');
+      if (t) t.style.display = 'flex';
+    }
+    checkRunReady();
+  }
+
+  // ── Parameter toggles ─────────────────────────────────────────────
+  var _lockedParams = new Set(['param-inv-min','param-inv-max','param-vessel-qty','param-vessel-freq','param-consumption']);
+  var _savedOptimizations = [];
+
+  function toggleParamRow(id) {
+    var item = document.getElementById(id);
+    if (!item) return;
+    var toggle = item.querySelector('.param-toggle');
+    toggleParam(toggle, id);
+  }
+
+  function toggleParam(btn, id) {
+    if (_lockedParams.has(id)) {
+      // Was locked → now active (user wants to optimize this)
+      _lockedParams.delete(id);
+      btn.classList.remove('off');
+      document.getElementById(id).classList.add('active');
+    } else {
+      // Was active → now locked
+      _lockedParams.add(id);
+      btn.classList.add('off');
+      document.getElementById(id).classList.remove('active');
+    }
+    var totalParams = document.querySelectorAll('.param-item').length;
+    var notice = document.getElementById('unconstrained-notice');
+    if (_lockedParams.size === totalParams) {
+      notice.textContent = 'No parameters selected — optimizer will use all levers';
+      notice.style.display = 'block';
+    } else if (_lockedParams.size === 0) {
+      notice.textContent = 'All parameters selected';
+      notice.style.display = 'block';
+    } else {
+      notice.style.display = 'none';
+    }
+    checkRunReady();
+  }
+
+  function checkRunReady() {
+    var outcomeSelected = document.querySelector('.outcome-option.selected') !== null;
+    var btn = document.getElementById('run-btn');
+    if (btn) btn.disabled = !outcomeSelected;
+  }
+
+  // ── Toggle groups ─────────────────────────────────────────────────
+  function toggleGroup(header) {
+    var body = header.nextElementSibling;
+    var chev = header.querySelector('.ig-chev');
+    if (body.style.display === 'none') {
+      body.style.display = 'flex';
+      chev.classList.add('open');
+    } else {
+      body.style.display = 'none';
+      chev.classList.remove('open');
+    }
+  }
+
+  // ── Run optimizer ─────────────────────────────────────────────────
+  var _statusMessages = [
+    'Initialising search space…',
+    'Sampling parameter space…',
+    'Evaluating stochastic outcomes…',
+    'Pruning suboptimal branches…',
+    'Converging on optimal solution…',
+    'Computing final metrics…'
+  ];
+
+  function runOptimizer() {
+    var overlay = document.getElementById('running-overlay');
+    overlay.style.display = 'flex';
+    var i = 0;
+    var interval = setInterval(function() {
+      var status = document.getElementById('running-status');
+      if (status && i < _statusMessages.length) {
+        status.textContent = _statusMessages[i++];
+      }
+    }, 600);
+    setTimeout(function() {
+      clearInterval(interval);
+      overlay.style.display = 'none';
+      showResults();
+    }, 4000);
+  }
+
+  function showResults() {
+    document.getElementById('current-state-panel').style.display = 'none';
+    var rp = document.getElementById('results-panel');
+    rp.style.display = 'flex';
+    // Show proposal pill in snav
+    var pp = document.getElementById('opt-proposal-pill');
+    if (pp) { pp.style.display = 'inline-flex'; pp.classList.add('snav-active'); }
+    var cp = document.getElementById('opt-current-pill');
+    if (cp) cp.classList.remove('snav-active');
+    // Disable run button
+    document.getElementById('run-btn').disabled = true;
+    initOutcomeChart();
+    initCoverChart();
+  }
+
+  // ── Save ──────────────────────────────────────────────────────────
+  function saveOptimization() {
+    document.getElementById('save-opt-modal').style.display = 'flex';
+    document.getElementById('save-opt-name').value = 'Maximize DOS — June 2026';
+    setTimeout(function() { document.getElementById('save-opt-name').select(); }, 50);
+  }
+
+  function confirmSaveOptimization() {
+    var name = document.getElementById('save-opt-name').value.trim();
+    if (!name) return;
+    var note = document.getElementById('save-opt-note').value.trim();
+    var id = 'opt-' + Date.now();
+    var outcome = document.querySelector('.outcome-option.selected .outcome-label');
+    var outcomeText = outcome ? outcome.textContent : 'Maximize DOS';
+    _savedOptimizations.push({
+      id: id, name: name, note: note,
+      outcome: outcomeText,
+      paramChanges: 3,
+      dos: '38d', twc: '$19.2M',
+      date: new Date().toLocaleDateString('en-CA')
+    });
+    document.getElementById('save-opt-modal').style.display = 'none';
+    updateSavedOptimizationsBtn();
+    // Rename proposal pill and col header
+    var pp = document.getElementById('opt-proposal-pill');
+    if (pp) pp.textContent = name;
+    var colName = document.getElementById('proposal-col-name');
+    if (colName) colName.textContent = name;
+    // Hide save button
+    var btn = document.querySelector('.save-btn');
+    if (btn) btn.style.display = 'none';
+  }
+
+  function updateSavedOptimizationsBtn() {
+    var count = _savedOptimizations.length;
+    var group = document.getElementById('opt-saved-group');
+    var btn = document.getElementById('opt-saved-btn');
+    if (btn) btn.textContent = 'Saved optimizations (' + count + ')';
+    if (group) group.style.display = count > 0 ? 'flex' : 'none';
+  }
+
+  function newOptimization() {
+    discardOptimization();
+    document.querySelectorAll('.outcome-option').forEach(function(o) {
+      o.classList.remove('selected');
+      var r = o.querySelector('input[type="radio"]'); if (r) r.checked = false;
+      var t = o.querySelector('.outcome-target'); if (t) t.style.display = 'none';
+    });
+    _lockedParams = new Set(['param-inv-min','param-inv-max','param-vessel-qty','param-vessel-freq','param-consumption']);
+    document.querySelectorAll('.param-toggle').forEach(function(t) { t.classList.add('off'); });
+    document.querySelectorAll('.param-item').forEach(function(i) { i.classList.remove('active'); });
+    var notice = document.getElementById('unconstrained-notice');
+    if (notice) { notice.textContent = 'No parameters selected — optimizer will use all levers'; notice.style.display = 'block'; }
+    checkRunReady();
+  }
+
+  function discardOptimization() {
+    document.getElementById('results-panel').style.display = 'none';
+    document.getElementById('current-state-panel').style.display = 'flex';
+    var pp = document.getElementById('opt-proposal-pill');
+    if (pp) { pp.style.display = 'none'; pp.classList.remove('snav-active'); pp.textContent = 'Proposal'; }
+    var cp = document.getElementById('opt-current-pill');
+    if (cp) cp.classList.add('snav-active');
+    // Restore save button and proposal col title
+    var btn = document.querySelector('.save-btn');
+    if (btn) { btn.style.display = ''; btn.textContent = 'Save'; btn.style.background = ''; }
+    var colName = document.getElementById('proposal-col-name');
+    if (colName) colName.textContent = 'Proposal';
+    document.getElementById('run-btn').disabled = false;
+  }
+
+  // ── Outcome chart — type depends on selected outcome ────────────────
+  function initOutcomeChart() {
+    var ctx = document.getElementById('chart-outcome');
+    if (!ctx) return;
+    var existing = Chart.getChart(ctx);
+    if (existing) existing.destroy();
+
+    var outcome = document.querySelector('.outcome-option.selected .outcome-label');
+    var outcomeKey = outcome ? outcome.textContent.trim().toLowerCase() : 'dos';
+
+    var CURRENT_COLOR = 'rgba(150,155,165,0.7)';
+    var PROPOSAL_COLOR = 'rgba(26,35,51,0.85)';
+    var FONT = "'IBM Plex Mono', monospace";
+    var TICK = { font: { size: 9, family: FONT }, color: '#9AA3B4' };
+
+    if (outcomeKey.includes('days of supply') || outcomeKey.includes('dos')) {
+      // DOS over time — line chart (same as cover projection but with proposal improvement)
+      document.getElementById('outcome-chart-title').textContent = 'Days of supply — Current Plan vs Proposal';
+      document.getElementById('outcome-chart-meta').textContent = 'Days of supply';
+      var labels = ['Jun','Jul','Aug','Sep','Oct','Nov'];
+      var current = [24, 18, 12, 28, 22, 16];
+      var proposal = [38, 34, 30, 44, 40, 36];
+      new Chart(ctx, {
+        type: 'line',
+        data: { labels: labels, datasets: [
+          { data: new Array(6).fill(30), borderColor: 'rgba(176,40,24,0.3)', borderWidth: 1, borderDash: [4,3], pointRadius: 0, fill: false, label: '' },
+          { data: current, borderColor: CURRENT_COLOR, borderWidth: 1.5, borderDash: [5,3], pointRadius: 0, fill: false, tension: 0.3, label: 'Current Plan' },
+          { data: proposal, borderColor: '#1A2333', borderWidth: 2, pointRadius: 0, fill: false, tension: 0.3, label: 'Proposal' }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, animation: { duration: 500 },
+          plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+          scales: { x: { grid: { display: false }, border: { display: false }, ticks: TICK },
+            y: { grid: { color: '#DDE1E8', lineWidth: 0.5 }, border: { display: false }, ticks: { ...TICK, callback: function(v) { return v + 'd'; }, maxTicksLimit: 5 } } } }
+      });
+
+    } else if (outcomeKey.includes('service')) {
+      // Service level — grouped bar with p05/median/p95 per plan
+      document.getElementById('outcome-chart-title').textContent = 'Service level — Current Plan vs Proposal';
+      document.getElementById('outcome-chart-meta').textContent = 'Stockout probability distribution';
+      new Chart(ctx, {
+        type: 'bar',
+        data: { labels: ['p05', 'Median', 'p95'],
+          datasets: [
+            { label: 'Current Plan', data: [42, 78, 94], backgroundColor: CURRENT_COLOR, borderRadius: 3 },
+            { label: 'Proposal',     data: [75, 91, 99], backgroundColor: PROPOSAL_COLOR, borderRadius: 3 }
+          ]},
+        options: { responsive: true, maintainAspectRatio: false, animation: { duration: 500 },
+          plugins: { legend: { position: 'top', labels: { font: { size: 10, family: FONT }, color: '#6B7A94', boxWidth: 12, padding: 12 } }, tooltip: { mode: 'index' } },
+          scales: { x: { grid: { display: false }, border: { display: false }, ticks: TICK },
+            y: { grid: { color: '#DDE1E8', lineWidth: 0.5 }, border: { display: false }, max: 100,
+              ticks: { ...TICK, callback: function(v) { return v + '%'; }, maxTicksLimit: 5 } } } }
+      });
+
+    } else if (outcomeKey.includes('twc')) {
+      // TWC — grouped bar with cost components
+      document.getElementById('outcome-chart-title').textContent = 'Trade working capital — Current Plan vs Proposal';
+      document.getElementById('outcome-chart-meta').textContent = 'USD · cost components';
+      new Chart(ctx, {
+        type: 'bar',
+        data: { labels: ['Storage', 'Transport', 'Demurrage', 'Total'],
+          datasets: [
+            { label: 'Current Plan', data: [8.2, 6.9, 3.3, 18.4], backgroundColor: CURRENT_COLOR, borderRadius: 3 },
+            { label: 'Proposal',     data: [7.4, 6.9, 2.1, 16.4], backgroundColor: PROPOSAL_COLOR, borderRadius: 3 }
+          ]},
+        options: { responsive: true, maintainAspectRatio: false, animation: { duration: 500 },
+          plugins: { legend: { position: 'top', labels: { font: { size: 10, family: FONT }, color: '#6B7A94', boxWidth: 12, padding: 12 } }, tooltip: { mode: 'index' } },
+          scales: { x: { grid: { display: false }, border: { display: false }, ticks: TICK },
+            y: { grid: { color: '#DDE1E8', lineWidth: 0.5 }, border: { display: false },
+              ticks: { ...TICK, callback: function(v) { return '$' + v + 'M'; }, maxTicksLimit: 5 } } } }
+      });
+
+    } else if (outcomeKey.includes('demurrage')) {
+      // Demurrage — bar with per-vessel breakdown
+      document.getElementById('outcome-chart-title').textContent = 'Demurrage — Current Plan vs Proposal';
+      document.getElementById('outcome-chart-meta').textContent = 'USD · per vessel event';
+      new Chart(ctx, {
+        type: 'bar',
+        data: { labels: ['Jun 14', 'Jul 8', 'Jul 28', 'Aug 19', 'Total'],
+          datasets: [
+            { label: 'Current Plan', data: [120, 0, 80, 40, 240], backgroundColor: CURRENT_COLOR, borderRadius: 3 },
+            { label: 'Proposal',     data: [60, 0, 60, 60, 180], backgroundColor: PROPOSAL_COLOR, borderRadius: 3 }
+          ]},
+        options: { responsive: true, maintainAspectRatio: false, animation: { duration: 500 },
+          plugins: { legend: { position: 'top', labels: { font: { size: 10, family: FONT }, color: '#6B7A94', boxWidth: 12, padding: 12 } }, tooltip: { mode: 'index' } },
+          scales: { x: { grid: { display: false }, border: { display: false }, ticks: TICK },
+            y: { grid: { color: '#DDE1E8', lineWidth: 0.5 }, border: { display: false },
+              ticks: { ...TICK, callback: function(v) { return '$' + v + 'k'; }, maxTicksLimit: 5 } } } }
+      });
+    }
+  }
+
+  // ── Current state cover chart ─────────────────────────────────────
+  function initCurrentChart() {
+    var ctx = document.getElementById('chart-current-opt');
+    if (!ctx) return;
+    var labels = ['Jun','Jul','Aug','Sep','Oct','Nov'];
+    var data = [24, 18, 12, 28, 22, 16];
+    var minLine = new Array(6).fill(30);
+    new Chart(ctx, {
+      type: 'line',
+      data: { labels: labels, datasets: [
+        { data: minLine, borderColor: 'rgba(176,40,24,0.35)', borderWidth: 1, borderDash: [4,4], pointRadius: 0, fill: false, label: '' },
+        { data: data, borderWidth: 1.5, pointRadius: 0, fill: false, tension: 0.3, label: 'Current Plan',
+          segment: { borderColor: function(c) { return (c.p0.parsed.y < 30 || c.p1.parsed.y < 30) ? 'rgba(176,40,24,0.9)' : 'rgba(60,60,60,0.8)'; } }
+        }
+      ]},
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 400 },
+        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+        scales: {
+          x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 9 }, color: '#9AA3B4' } },
+          y: { grid: { color: '#DDE1E8', lineWidth: 0.5 }, border: { display: false },
+               ticks: { font: { size: 9 }, color: '#9AA3B4', callback: function(v) { return v + 'd'; }, maxTicksLimit: 5 } }
+        }
+      }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', initCurrentChart);
+
+  // ── Cover chart ───────────────────────────────────────────────────
+  function initCoverChart() {
+    var ctx = document.getElementById('chart-opt-cover');
+    if (!ctx) return;
+    var existing = Chart.getChart(ctx);
+    if (existing) existing.destroy();
+    var labels = ['Jun','Jul','Aug','Sep','Oct','Nov'];
+    var current = [24, 18, 12, 28, 22, 16];
+    var proposal = [38, 34, 30, 44, 40, 36];
+    var minLine = new Array(6).fill(30);
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { data: minLine, borderColor: 'rgba(176,40,24,0.35)', borderWidth: 1,
+            borderDash: [4,4], pointRadius: 0, fill: false, label: '' },
+          { data: current, borderColor: 'rgba(150,155,165,0.8)', borderWidth: 1.5,
+            borderDash: [5,3], pointRadius: 0, fill: false, tension: 0.3, label: 'Current Plan' },
+          { data: proposal, borderColor: '#1A2333', borderWidth: 2,
+            pointRadius: 0, fill: false, tension: 0.3, label: 'Proposal',
+            segment: {
+              borderColor: function(c) { return (c.p0.parsed.y < 30 || c.p1.parsed.y < 30) ? 'rgba(176,40,24,0.9)' : '#1A2333'; }
+            }
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 600 },
+        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+        scales: {
+          x: { grid: { display: false }, border: { display: false },
+               ticks: { font: { size: 9 }, color: '#9AA3B4' } },
+          y: { grid: { color: '#DDE1E8', lineWidth: 0.5 }, border: { display: false },
+               ticks: { font: { size: 9 }, color: '#9AA3B4', callback: function(v) { return v + 'd'; }, maxTicksLimit: 5 } }
+        }
+      }
+    });
+  }
+</script>
+<!-- Save optimization modal -->
+<div class="modal-overlay" id="save-opt-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title">Save optimization</div>
+    <div class="modal-body">
+      <div class="modal-label">Name</div>
+      <input class="modal-input" id="save-opt-name" type="text" placeholder="e.g. Maximize DOS — June 2026" value="Maximize DOS — June 2026" onkeydown="if(event.key==='Enter') confirmSaveOptimization()"/>
+      <div class="modal-label" style="margin-top:4px;">Note (optional)</div>
+      <input class="modal-input" id="save-opt-note" type="text" placeholder="Brief description of the outcome and parameters"/>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" onclick="document.getElementById('save-opt-modal').style.display='none'">Cancel</button>
+      <button class="modal-btn-save" onclick="confirmSaveOptimization()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Saved optimizations modal -->
+<div class="confirm-modal-overlay" id="saved-opt-modal" style="display:none;align-items:flex-start;padding-top:60px;">
+  <div style="background:var(--bg2);border-radius:12px;width:860px;max-width:calc(100vw - 80px);display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.15);overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <span style="font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);">Saved optimizations</span>
+      <button onclick="document.getElementById('saved-opt-modal').style.display='none'" style="border:none;background:none;cursor:pointer;color:var(--faint);display:flex;align-items:center;"><span class="material-icons" style="font-size:20px;">close</span></button>
+    </div>
+    <div style="overflow-y:auto;max-height:440px;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead style="position:sticky;top:0;background:var(--bg3);">
+          <tr>
+            <th style="width:36px;padding:8px 8px 8px 16px;"></th>
+            <th style="text-align:left;padding:8px 12px;font-size:9px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--faint);white-space:nowrap;">Name</th>
+            <th style="text-align:left;padding:8px 12px;font-size:9px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--faint);white-space:nowrap;">Outcome</th>
+            <th style="text-align:left;padding:8px 12px;font-size:9px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--faint);white-space:nowrap;">Parameter changes</th>
+            <th style="text-align:right;padding:8px 12px;font-size:9px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--faint);white-space:nowrap;">DOS</th>
+            <th style="text-align:right;padding:8px 12px;font-size:9px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--faint);white-space:nowrap;">TWC</th>
+            <th style="text-align:left;padding:8px 12px;font-size:9px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--faint);white-space:nowrap;">Date</th>
+            <th style="padding:8px 12px;width:80px;"></th>
+          </tr>
+        </thead>
+        <tbody id="saved-opt-list"></tbody>
+      </table>
+    </div>
+    <div style="display:flex;align-items:center;padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;background:var(--bg2);">
+      <div style="margin-left:auto;">
+        <button onclick="loadSavedOptimization()" id="load-opt-btn" disabled
+          style="padding:7px 16px;border-radius:6px;border:none;background:var(--text);color:white;font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;opacity:0.4;transition:opacity 0.15s;">Load optimization</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openSavedOptimizations() {
+    var list = document.getElementById('saved-opt-list');
+    list.innerHTML = '';
+    var selectedId = null;
+    _savedOptimizations.forEach(function(opt) {
+      var tr = document.createElement('tr');
+      tr.style.cssText = 'cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.1s;';
+      tr.innerHTML =
+        '<td style="padding:10px 8px 10px 16px;"><input type="radio" name="saved-opt-radio"/></td>' +
+        '<td style="padding:10px 12px;font-weight:500;color:var(--text);">' + opt.name +
+          (opt.note ? '<div style="font-size:10px;color:var(--faint);font-family:var(--mono);margin-top:2px;">' + opt.note + '</div>' : '') +
+        '</td>' +
+        '<td style="padding:10px 12px;color:var(--muted);font-size:11px;">' + opt.outcome + '</td>' +
+        '<td style="padding:10px 12px;color:var(--muted);font-size:11px;">' + opt.paramChanges + ' parameters</td>' +
+        '<td style="padding:10px 12px;text-align:right;font-family:var(--mono);font-size:11px;">' + opt.dos + '</td>' +
+        '<td style="padding:10px 12px;text-align:right;font-family:var(--mono);font-size:11px;">' + opt.twc + '</td>' +
+        '<td style="padding:10px 12px;color:var(--faint);font-family:var(--mono);font-size:11px;">' + opt.date + '</td>' +
+        '<td style="padding:10px 12px;text-align:right;">' +
+          '<button data-del-id="' + opt.id + '" class="opt-del-btn" style="border:none;background:none;cursor:pointer;color:var(--faint);"><span class="material-icons" style="font-size:15px;">delete_outline</span></button>' +
+        '</td>';
+      tr.onclick = function() {
+        list.querySelectorAll('tr').forEach(function(r) { r.style.background = ''; r.querySelector('input[type=radio]').checked = false; });
+        tr.style.background = 'var(--bg3)';
+        tr.querySelector('input[type=radio]').checked = true;
+        selectedId = opt.id;
+        var lb = document.getElementById('load-opt-btn');
+        lb.disabled = false; lb.style.opacity = '1';
+        lb.dataset.id = opt.id;
+      };
+      list.appendChild(tr);
+    });
+    document.getElementById('saved-opt-modal').style.display = 'flex';
+    var lb = document.getElementById('load-opt-btn');
+    lb.disabled = true; lb.style.opacity = '0.4';
+    list.querySelectorAll('.opt-del-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var id = btn.getAttribute('data-del-id');
+        _savedOptimizations = _savedOptimizations.filter(function(o) { return o.id !== id; });
+        openSavedOptimizations();
+        updateSavedOptimizationsBtn();
+      });
+    });
+  }
+
+  function loadSavedOptimization() {
+    document.getElementById('saved-opt-modal').style.display = 'none';
+    showResults();
+  }
+</script>
+
+</body>
+</html>

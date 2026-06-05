@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Charter — ISAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:        #F5F6F8;
+    --bg2:       #FFFFFF;
+    --bg3:       #ECEEF2;
+    --fill:      #E8EAF0;
+    --border:    #DDE1E8;
+    --border2:   #C8CDD8;
+    --text:      #1A2333;
+    --muted:     #6B7A94;
+    --faint:     #9AA3B4;
+    --ok:        #1A6E38;   --ok-bg:   #EBF5EF;
+    --warn:      #8A5800;   --warn-bg: #FEF8EC;
+    --danger:    #B02818;   --danger-bg: #FDECEA;
+    --modified:  #185FA5;   --modified-bg: #E6F1FB;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+    --topbar-h: 45px;
+    --subheader-h: 48px;
+    --header-total: 93px;
+    --left-w: 320px;
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 13px; }
+
+  /* ── Topbar ── */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-h);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; background: var(--bg2); border-bottom: 1px solid var(--border);
+    z-index: 200;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 20px; }
+  .topbar-logo { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+  .nav-item { padding: 5px 12px; border-radius: 6px; font-size: 12px; color: var(--muted); cursor: pointer; border: none; background: none; font-family: var(--sans); transition: all 0.15s; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: var(--bg3); color: var(--text); font-weight: 500; }
+  .topbar-right { font-size: 11px; color: var(--faint); font-family: var(--mono); }
+
+  /* ── Page header ── */
+  .page-header {
+    position: fixed; top: var(--topbar-h); left: 0; right: 0; height: var(--subheader-h);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; background: var(--bg); border-bottom: 1px solid var(--border);
+    z-index: 190;
+  }
+  .page-title { font-size: 18px; font-weight: 600; color: var(--text); line-height: 1; }
+  .page-meta  { font-size: 11px; color: var(--faint); font-family: var(--mono); margin-top: 2px; }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+
+  /* ── Snav ── */
+  .snav-toggle { display: flex; align-items: center; gap: 2px; background: var(--bg3); border-radius: 7px; padding: 3px; }
+  .snav-btn { padding: 4px 11px; border-radius: 5px; font-size: 11px; cursor: pointer; border: none; background: none; color: var(--muted); font-family: var(--sans); font-weight: 500; transition: all 0.15s; white-space: nowrap; }
+  .snav-btn:hover { background: var(--bg2); color: var(--text); }
+  .snav-btn.snav-active { background: var(--bg2); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .snav-generate {
+    background: var(--text) !important; color: white !important;
+    border-radius: 6px !important; padding: 5px 12px !important;
+    font-weight: 500 !important; border: none; cursor: pointer;
+    font-family: var(--sans); font-size: 11px;
+  }
+  .snav-generate:hover { opacity: 0.88; }
+  .snav-generate:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* ── Layout ── */
+  .content-area { margin-top: var(--header-total); display: block; }
+
+  /* ── Left panel ── */
+  .left-panel {
+    width: var(--left-w);
+    position: fixed; top: var(--header-total); bottom: 0; left: 0;
+    overflow-y: auto;
+    padding: 12px 16px calc(72px + 16px) 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    background: var(--bg);
+  }
+
+  /* ── Action bar ── */
+  .action-bar {
+    position: fixed; bottom: 0; left: 0; width: var(--left-w);
+    padding: 8px 16px 16px;
+    background: linear-gradient(to bottom, transparent, var(--bg) 30%);
+    z-index: 100;
+  }
+  .generate-btn {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 20px; border-radius: 8px; border: none;
+    background: var(--text); color: white;
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  .generate-btn:hover { opacity: 0.85; }
+
+  /* ── Input groups ── */
+  .input-group { background: var(--bg2); border-radius: 10px; }
+  .ig-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; user-select: none; }
+  .ig-title  { font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .ig-chev   { font-size: 11px; color: var(--faint); transition: transform 0.2s; }
+  .ig-chev.open { transform: rotate(0deg); }
+  .ig-chev.closed { transform: rotate(-90deg); }
+  .ig-body   { padding: 0 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+
+  /* ── Input fields ── */
+  .ir { display: flex; flex-direction: column; gap: 3px; }
+  .ir-label { font-size: 11px; color: var(--muted); }
+  .ir-field  { display: flex; align-items: center; gap: 6px; }
+  .ir-field-wrap { position: relative; display: flex; align-items: center; flex: 1; }
+  .ir-field-wrap input { flex: 1; padding: 6px 28px 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); font-size: 12px; color: var(--text); font-family: var(--mono); outline: none; width: 100%; }
+  .ir-field-wrap input:focus { border-color: var(--text); }
+  .ir-field-wrap input.overridden { border-color: var(--modified); background: var(--modified-bg); }
+  .ir-unit-inside { position: absolute; right: 8px; font-size: 10px; color: var(--faint); font-family: var(--mono); pointer-events: none; }
+  .ir-source { font-size: 10px; color: var(--faint); font-family: var(--mono); margin-top: 2px; }
+
+  /* ── In-transit vessel cards ── */
+  .vessel-card-a { display:flex; align-items:center; gap:10px; background:var(--bg); border-radius:8px; padding:9px 12px; border:1px solid transparent; }
+  .vessel-card-a-left { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+  .vessel-card-a-date { font-size:13px; font-weight:500; font-family:var(--mono); color:var(--text); }
+  .vessel-card-a-unc  { font-size:9px; color:var(--danger); margin-left:4px; }
+  .vessel-card-a-sub  { font-size:11px; color:var(--muted); }
+  .vessel-card-a-right { display:flex; flex-direction:column; align-items:flex-end; gap:3px; flex-shrink:0; }
+  .vessel-card-a-qty  { font-size:12px; font-weight:500; font-family:var(--mono); color:var(--text); }
+  .vessel-card-a-conf { display:flex; align-items:center; gap:4px; font-size:10px; color:var(--muted); }
+  .vessel-conf-dot    { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+
+  /* ── Right panel ── */
+  .right-panel {
+    margin-left: var(--left-w);
+    padding: 20px 24px 32px;
+    display: flex; flex-direction: column; gap: 16px;
+    min-height: calc(100vh - var(--header-total));
+  }
+
+  /* ── Direction panels ── */
+  .direction-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .direction-panel { background: var(--bg2); border-radius: 8px; overflow: hidden; }
+  .direction-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+  }
+  .direction-title { font-size: 10px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .direction-route { font-size: 11px; color: var(--faint); font-family: var(--mono); }
+  .capacity-bar-wrap { padding: 10px 16px 14px; }
+  .capacity-label { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 10px; color: var(--muted); font-family: var(--mono); }
+  .capacity-track { height: 6px; background: var(--fill); border-radius: 3px; overflow: hidden; }
+  .capacity-fill  { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+  .capacity-fill.ok     { background: var(--ok); }
+  .capacity-fill.warn   { background: var(--warn); }
+  .capacity-fill.danger { background: var(--danger); }
+
+  /* ── Material rows in loading plan ── */
+  .material-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .material-table thead th {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--faint); padding: 8px 16px; text-align: left;
+    border-bottom: 1px solid var(--border); background: var(--bg3);
+  }
+  .material-table thead th:last-child { text-align: right; }
+  .material-table tbody td { padding: 10px 16px; border-bottom: 1px solid var(--fill); }
+  .material-table tbody tr:last-child td { border-bottom: none; }
+  .mat-row-name { font-weight: 500; color: var(--text); }
+  .mat-row-type { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .priority-badge { font-size: 9px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 7px; border-radius: 10px; }
+  .priority-badge.p1 { background: var(--danger-bg); color: var(--danger); }
+  .priority-badge.p2 { background: var(--warn-bg); color: var(--warn); }
+  .priority-badge.p3 { background: var(--bg3); color: var(--muted); }
+  .qty-input-wrap { display: flex; align-items: center; gap: 6px; }
+  .qty-input { width: 90px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-family: var(--mono); color: var(--text); text-align: right; background: var(--bg); outline: none; }
+  .qty-input:focus { border-color: var(--text); }
+  .qty-input.overridden { border-color: var(--modified); background: var(--modified-bg); color: var(--modified); font-weight: 500; }
+  .qty-unit { font-size: 10px; color: var(--faint); white-space: nowrap; }
+  .dos-impact { font-size: 10px; font-family: var(--mono); }
+  .dos-impact.ok   { color: var(--ok); }
+  .dos-impact.warn { color: var(--warn); }
+  .dos-impact.neg  { color: var(--danger); }
+
+  /* ── Plan header ── */
+  .plan-header { display: flex; align-items: center; justify-content: space-between; }
+  .plan-title  { font-size: 13px; font-weight: 600; color: var(--text); }
+  .plan-meta   { font-size: 11px; color: var(--faint); font-family: var(--mono); margin-top: 2px; }
+  .plan-actions { display: flex; align-items: center; gap: 6px; }
+  .btn-icon-ghost { width: 28px; height: 28px; border-radius: 6px; border: none; background: var(--bg2); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted); flex-shrink: 0; transition: all 0.15s; padding: 0; }
+  .btn-icon-ghost:hover { background: var(--bg3); color: var(--text); }
+  .btn-icon-ghost .material-icons { font-size: 16px; }
+  .sep { width: 1px; height: 16px; background: var(--border2); }
+  .confirm-btn { padding: 6px 18px; border-radius: 6px; border: none; background: var(--text); color: white; font-family: var(--sans); font-size: 12px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; }
+  .confirm-btn:hover { opacity: 0.85; }
+
+  /* ── Empty state ── */
+  .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 60px 40px; }
+  .empty-icon { font-size: 40px; color: var(--faint); }
+  .empty-title { font-size: 15px; font-weight: 500; color: var(--text); }
+  .empty-desc  { font-size: 12px; color: var(--muted); max-width: 360px; line-height: 1.6; }
+
+  /* ── Recalculating overlay ── */
+  .recalc-notice { display: none; align-items: center; gap: 8px; font-size: 11px; color: var(--modified); font-family: var(--mono); background: var(--modified-bg); border: 1px solid #A8C8F0; border-radius: 6px; padding: 6px 12px; }
+  .recalc-notice.visible { display: flex; }
+
+  /* ── Tooltips ── */
+  [data-tip] { position: relative; }
+  [data-tip]::after {
+    content: attr(data-tip); position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: #1A2333; color: #fff; font-size: 10px; font-family: var(--sans);
+    white-space: nowrap; padding: 4px 8px; border-radius: 5px;
+    pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 9999;
+  }
+  [data-tip]:hover::after { opacity: 1; }
+
+  /* ── KPI cards (same as simulate/optimize) ── */
+  .kpi { background: var(--bg2); border-radius: 8px; padding: 10px 12px; position: relative; }
+  .kpi.danger { border-left: 3px solid var(--danger); }
+  .kpi.warn   { border-left: 3px solid var(--warn); }
+  .kpi.ok     { border-left: 3px solid var(--ok); }
+  .kpi-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; margin-bottom: 4px; }
+  .kpi-val { font-size: 22px; font-weight: 300; font-family: var(--mono); color: var(--text); line-height: 1; }
+  .kpi-val .u { font-size: 11px; color: var(--muted); margin-left: 2px; }
+  .kpi-delta { font-size: 10px; font-family: var(--mono); margin-top: 3px; }
+  .kpi-delta.neg  { color: var(--danger); }
+  .kpi-delta.pos  { color: var(--ok); }
+  .kpi-delta.warn { color: var(--warn); }
+  .kpi-delta.neu  { color: var(--muted); }
+
+  /* ── Running overlay ── */
+  #running-overlay { display: none; position: fixed; inset: 0; background: rgba(248,249,251,0.85); z-index: 500; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Modal ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 600; display: none; align-items: center; justify-content: center; }
+  .modal { background: var(--bg2); border-radius: 12px; padding: 24px; width: 380px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+  .modal-title { font-size: 15px; font-weight: 500; }
+  .modal-body  { display: flex; flex-direction: column; gap: 6px; }
+  .modal-label { font-size: 11px; color: var(--muted); }
+  .modal-input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: var(--sans); outline: none; width: 100%; }
+  .modal-input:focus { border-color: var(--text); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-btn-cancel { padding: 7px 14px; border-radius: 6px; border: 1px solid var(--border); background: none; font-family: var(--sans); font-size: 12px; cursor: pointer; color: var(--muted); }
+  .modal-btn-save   { padding: 7px 14px; border-radius: 6px; border: none; background: var(--text); color: white; font-family: var(--sans); font-size: 12px; cursor: pointer; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-logo">ISAL Console</span>
+    <button class="nav-item" onclick="location.href='dashboard.html'">Dashboard</button>
+    <button class="nav-item" onclick="location.href='simulation.html'">Simulate</button>
+    <button class="nav-item" onclick="location.href='optimize.html'">Optimize</button>
+    <button class="nav-item active">Charter</button>
+  </div>
+  <div class="topbar-right">ISAL · May 21, 2026 · 09:14</div>
+</div>
+
+<!-- Page header -->
+<div class="page-header">
+  <div>
+    <div class="page-title">Charter</div>
+    <div class="page-meta">Rotterdam ↔ ISAL · Weekly · Next departure Jun 8, 2026</div>
+  </div>
+  <div class="header-right">
+    <div class="snav-toggle" id="charter-snav">
+      <span class="snav-btn snav-active" style="cursor:default;">Current inputs</span>
+      <span class="snav-btn" id="plan-pill" style="display:none;cursor:default;">Loading plan</span>
+    </div>
+  </div>
+</div>
+
+<div class="content-area">
+
+  <!-- Left panel -->
+  <div class="left-panel">
+
+    <!-- Charter info -->
+    <div class="input-group">
+      <div class="ig-header" onclick="toggleGroup(this)">
+        <span class="ig-title">Charter</span>
+        <span class="ig-chev open">▾</span>
+      </div>
+      <div class="ig-body">
+        <div class="ir">
+          <div class="ir-label">Departure date</div>
+          <div class="ir-field-wrap">
+            <input type="text" value="Jun 8, 2026" oninput="markOverride(this)"/>
+          </div>
+        </div>
+        <div class="ir">
+          <div class="ir-label">Capacity</div>
+          <div class="ir-field-wrap">
+            <input type="number" value="4200" oninput="markOverride(this)"/>
+            <span class="ir-unit-inside">t</span>
+          </div>
+          <div class="ir-source">Source: charter contract</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inventory at Rhenus -->
+    <div class="input-group">
+      <div class="ig-header" onclick="toggleGroup(this)">
+        <span class="ig-title">Inventory at Rhenus</span>
+        <span class="ig-chev open">▾</span>
+      </div>
+      <div class="ig-body">
+        <div class="ir-source" style="margin-bottom:2px;">Auto-populated · as of Jun 5, 2026</div>
+        <div class="ir">
+          <div class="ir-label">Anodes — 76-reg</div>
+          <div class="ir-field-wrap">
+            <input type="number" value="8400" oninput="markOverride(this)"/>
+            <span class="ir-unit-inside">anodes</span>
+          </div>
+        </div>
+        <div class="ir">
+          <div class="ir-label">Anodes — 76-start</div>
+          <div class="ir-field-wrap">
+            <input type="number" value="3200" oninput="markOverride(this)"/>
+            <span class="ir-unit-inside">anodes</span>
+          </div>
+        </div>
+        <div class="ir">
+          <div class="ir-label">Anodes — 75-reg</div>
+          <div class="ir-field-wrap">
+            <input type="number" value="5100" oninput="markOverride(this)"/>
+            <span class="ir-unit-inside">anodes</span>
+          </div>
+        </div>
+        <div class="ir">
+          <div class="ir-label">Fluoride</div>
+          <div class="ir-field-wrap">
+            <input type="number" value="340" oninput="markOverride(this)"/>
+            <span class="ir-unit-inside">mt</span>
+          </div>
+        </div>
+        <div class="ir">
+          <div class="ir-label">Empty anode butt containers</div>
+          <div class="ir-field-wrap">
+            <input type="number" value="18" oninput="markOverride(this)"/>
+            <span class="ir-unit-inside">containers</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inventory at ISAL -->
+    <div class="input-group">
+      <div class="ig-header" onclick="toggleGroup(this)">
+        <span class="ig-title">Inventory at ISAL</span>
+        <span class="ig-chev open">▾</span>
+      </div>
+      <div class="ig-body">
+        <div class="ir-source" style="margin-bottom:2px;">Auto-populated · as of Jun 5, 2026</div>
+        <div class="ir">
+          <div class="ir-label">Anodes (all types)</div>
+          <div class="ir-field-wrap">
+            <input type="number" value="24" oninput="markOverride(this)"/>
+            <span class="ir-unit-inside">days</span>
+          </div>
+          <div class="ir-source">Current: 24d · Target min: 30d</div>
+        </div>
+        <div class="ir">
+          <div class="ir-label">Fluoride</div>
+          <div class="ir-field-wrap">
+            <input type="number" value="52" oninput="markOverride(this)"/>
+            <span class="ir-unit-inside">days</span>
+          </div>
+          <div class="ir-source">Current: 52d · Target min: 47d</div>
+        </div>
+        <div class="ir">
+          <div class="ir-label">Cold metal</div>
+          <div class="ir-field-wrap">
+            <input type="number" value="480" oninput="markOverride(this)"/>
+            <span class="ir-unit-inside">mt</span>
+          </div>
+          <div class="ir-source">Awaiting delivery to Rotterdam</div>
+        </div>
+        <div class="ir">
+          <div class="ir-label">Anode butts</div>
+          <div class="ir-field-wrap">
+            <input type="number" value="1240" oninput="markOverride(this)"/>
+            <span class="ir-unit-inside">mt</span>
+          </div>
+        </div>
+        <div class="ir">
+          <div class="ir-label">Empty fluoride containers</div>
+          <div class="ir-field-wrap">
+            <input type="number" value="12" oninput="markOverride(this)"/>
+            <span class="ir-unit-inside">containers</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- In-transit vessels -->
+    <div class="input-group">
+      <div class="ig-header" onclick="toggleGroup(this)">
+        <span class="ig-title">In-transit from China</span>
+        <span class="ig-chev open">▾</span>
+      </div>
+      <div class="ig-body" style="gap:6px;">
+        <div class="ir-source">Auto-populated via AIS · as of Jun 5, 2026</div>
+        <div class="vessel-card-a">
+          <div class="vessel-card-a-left">
+            <div class="vessel-card-a-date">Jun 22<span class="vessel-card-a-unc"> ± 5d</span></div>
+            <div class="vessel-card-a-sub">Supplier 1 · 13,500 anodes (76-reg)</div>
+          </div>
+          <div class="vessel-card-a-right">
+            <span class="vessel-card-a-conf"><span class="vessel-conf-dot" style="background:var(--warn);"></span>Medium</span>
+          </div>
+        </div>
+        <div class="vessel-card-a">
+          <div class="vessel-card-a-left">
+            <div class="vessel-card-a-date">Jul 8</div>
+            <div class="vessel-card-a-sub">Supplier 2 · 11,200 anodes (75-reg)</div>
+          </div>
+          <div class="vessel-card-a-right">
+            <span class="vessel-card-a-conf"><span class="vessel-conf-dot" style="background:var(--ok);"></span>High</span>
+          </div>
+        </div>
+        <div class="vessel-card-a">
+          <div class="vessel-card-a-left">
+            <div class="vessel-card-a-date">Jul 28</div>
+            <div class="vessel-card-a-sub">Supplier 1 · 8,400 anodes (76-start) + 340 mt Fluoride</div>
+          </div>
+          <div class="vessel-card-a-right">
+            <span class="vessel-card-a-conf"><span class="vessel-conf-dot" style="background:var(--ok);"></span>High</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /left-panel -->
+
+  <!-- Action bar -->
+  <div class="action-bar">
+    <button class="generate-btn" onclick="generatePlan()">
+      <span class="material-icons" style="font-size:16px;">auto_fix_high</span>
+      Generate loading plan
+    </button>
+  </div>
+
+  <!-- Right panel -->
+  <div class="right-panel" id="right-panel">
+
+    <!-- Previous plan (default view) -->
+    <div id="previous-plan" style="display:flex;flex-direction:column;gap:16px;">
+
+      <!-- Previous plan header -->
+      <div class="plan-header">
+        <div>
+          <div style="font-size:10px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--faint);margin-bottom:4px;">Previous charter</div>
+          <div class="plan-title">Loading plan · Jun 1, 2026</div>
+          <div class="plan-meta">Rotterdam ↔ ISAL · 4,200t capacity · Confirmed Jun 1, 2026 07:42</div>
+        </div>
+
+      </div>
+
+      <!-- Previous summary KPI cards -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+        <div class="kpi ok">
+          <div class="kpi-lbl">Total tonnage</div>
+          <div class="kpi-val">4,700<span class="u">t</span></div>
+          <div class="kpi-delta neu">of 4,200t capacity</div>
+        </div>
+        <div class="kpi ok">
+          <div class="kpi-lbl">Anodes DOS after loading</div>
+          <div class="kpi-val">29<span class="u">d</span></div>
+          <div class="kpi-delta neu">close to target (30d)</div>
+        </div>
+        <div class="kpi ok">
+          <div class="kpi-lbl">Fluoride DOS after loading</div>
+          <div class="kpi-val">52<span class="u">d</span></div>
+          <div class="kpi-delta pos">↑ within range</div>
+        </div>
+      </div>
+
+      <!-- Two-direction grid — previous -->
+      <div class="direction-grid">
+
+        <!-- Previous Rotterdam → ISAL -->
+        <div class="direction-panel">
+          <div class="direction-header">
+            <div>
+              <div class="direction-title">Rotterdam → ISAL</div>
+              <div class="direction-route">Rhenus → Straumsvík</div>
+            </div>
+            <span style="font-size:10px;color:var(--ok);font-family:var(--mono);font-weight:500;">3,120t / 4,200t</span>
+          </div>
+          <div class="capacity-bar-wrap">
+            <div class="capacity-label"><span>Capacity used</span><span>74%</span></div>
+            <div class="capacity-track"><div class="capacity-fill ok" style="width:74%;"></div></div>
+          </div>
+          <table class="material-table">
+            <thead><tr>
+              <th>Material</th><th>Priority</th><th>Qty</th><th>DOS impact</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td><div class="mat-row-name">Anodes — 76-reg</div><div class="mat-row-type">Consumable</div></td>
+                <td><span class="priority-badge p2">P2</span></td>
+                <td><div style="font-family:var(--mono);font-size:12px;color:var(--text);">5,500 anodes</div></td>
+                <td><div class="dos-impact ok">+5d → 29d</div></td>
+              </tr>
+              <tr>
+                <td><div class="mat-row-name">Anodes — 75-reg</div><div class="mat-row-type">Consumable</div></td>
+                <td><span class="priority-badge p2">P2</span></td>
+                <td><div style="font-family:var(--mono);font-size:12px;color:var(--text);">2,800 anodes</div></td>
+                <td><div class="dos-impact warn">+2d → 12d</div></td>
+              </tr>
+              <tr>
+                <td><div class="mat-row-name">Fluoride</div><div class="mat-row-type">Consumable</div></td>
+                <td><span class="priority-badge p2">P2</span></td>
+                <td><div style="font-family:var(--mono);font-size:12px;color:var(--text);">310 mt</div></td>
+                <td><div class="dos-impact ok">+6d → 52d</div></td>
+              </tr>
+              <tr>
+                <td><div class="mat-row-name">Empty anode butt containers</div><div class="mat-row-type">Returnable packaging</div></td>
+                <td><span class="priority-badge p3">P3</span></td>
+                <td><div style="font-family:var(--mono);font-size:12px;color:var(--text);">12 containers</div></td>
+                <td><div class="dos-impact" style="color:var(--faint);">—</div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Previous ISAL → Rotterdam -->
+        <div class="direction-panel">
+          <div class="direction-header">
+            <div>
+              <div class="direction-title">ISAL → Rotterdam</div>
+              <div class="direction-route">Straumsvík → Rhenus</div>
+            </div>
+            <span style="font-size:10px;color:var(--ok);font-family:var(--mono);font-weight:500;">1,580t / 4,200t</span>
+          </div>
+          <div class="capacity-bar-wrap">
+            <div class="capacity-label"><span>Capacity used</span><span>38%</span></div>
+            <div class="capacity-track"><div class="capacity-fill ok" style="width:38%;"></div></div>
+          </div>
+          <table class="material-table">
+            <thead><tr>
+              <th>Material</th><th>Priority</th><th>Qty</th><th>Notes</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td><div class="mat-row-name">Cold metal</div><div class="mat-row-type">Waste / by-product</div></td>
+                <td><span class="priority-badge p1">P1</span></td>
+                <td><div style="font-family:var(--mono);font-size:12px;color:var(--text);">420 mt</div></td>
+                <td><div class="dos-impact ok">Full stock</div></td>
+              </tr>
+              <tr>
+                <td><div class="mat-row-name">Anode butts</div><div class="mat-row-type">Waste / by-product</div></td>
+                <td><span class="priority-badge p1">P1</span></td>
+                <td><div style="font-family:var(--mono);font-size:12px;color:var(--text);">1,160 mt</div></td>
+                <td><div class="dos-impact ok">Full stock</div></td>
+              </tr>
+              <tr>
+                <td><div class="mat-row-name">Empty fluoride containers</div><div class="mat-row-type">Returnable packaging</div></td>
+                <td><span class="priority-badge p3">P3</span></td>
+                <td><div style="font-family:var(--mono);font-size:12px;color:var(--text);">10 containers</div></td>
+                <td><div class="dos-impact" style="color:var(--faint);">—</div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+
+    </div><!-- /previous-plan -->
+
+    <!-- Plan (hidden until generated) -->
+    <div id="plan-panel" style="display:none;flex-direction:column;gap:16px;">
+
+      <!-- Plan header -->
+      <div class="plan-header">
+        <div>
+          <div class="plan-title">Recommended loading plan</div>
+          <div class="plan-meta" id="plan-meta">Jun 8, 2026 departure · 4,200t capacity · Generated Jun 5, 2026 09:14</div>
+        </div>
+        <div class="plan-actions">
+          <div class="recalc-notice" id="recalc-notice">
+            <span class="material-icons" style="font-size:14px;">refresh</span>
+            Override applied — recalculating…
+          </div>
+          <button class="btn-icon-ghost" data-tip="Discard plan" onclick="discardPlan()"><span class="material-icons">delete_outline</span></button>
+          <div class="sep"></div>
+          <button class="btn-icon-ghost" data-tip="Share" onclick="openShareModal()"><span class="material-icons">ios_share</span></button>
+          <button class="confirm-btn" onclick="confirmPlan()">Confirm plan</button>
+        </div>
+      </div>
+
+      <!-- Summary KPI cards -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
+        <div class="kpi warn">
+          <div class="kpi-lbl">Total tonnage</div>
+          <div class="kpi-val">4,560<span class="u">t</span></div>
+          <div class="kpi-delta warn">of 4,200t capacity</div>
+        </div>
+        <div class="kpi ok">
+          <div class="kpi-lbl">Rotterdam → ISAL</div>
+          <div class="kpi-val">2,840<span class="u">t</span></div>
+          <div class="kpi-delta neu">68% of capacity</div>
+        </div>
+        <div class="kpi ok">
+          <div class="kpi-lbl">ISAL → Rotterdam</div>
+          <div class="kpi-val">1,720<span class="u">t</span></div>
+          <div class="kpi-delta neu">41% of capacity</div>
+        </div>
+        <div class="kpi warn">
+          <div class="kpi-lbl">Anodes DOS after loading</div>
+          <div class="kpi-val">26<span class="u">d</span></div>
+          <div class="kpi-delta neg">↓ below target (30d)</div>
+        </div>
+        <div class="kpi ok">
+          <div class="kpi-lbl">Fluoride DOS after loading</div>
+          <div class="kpi-val">57<span class="u">d</span></div>
+          <div class="kpi-delta pos">↑ within range</div>
+        </div>
+      </div>
+
+      <!-- Two-direction grid -->
+      <div class="direction-grid">
+
+        <!-- Rotterdam → ISAL -->
+        <div class="direction-panel">
+          <div class="direction-header">
+            <div>
+              <div class="direction-title">Rotterdam → ISAL</div>
+              <div class="direction-route">Rhenus → Straumsvík</div>
+            </div>
+            <span style="font-size:10px;color:var(--ok);font-family:var(--mono);font-weight:500;" id="r2i-tonnage">2,840t / 4,200t</span>
+          </div>
+          <div class="capacity-bar-wrap">
+            <div class="capacity-label">
+              <span>Capacity used</span>
+              <span id="r2i-pct">68%</span>
+            </div>
+            <div class="capacity-track"><div class="capacity-fill ok" id="r2i-bar" style="width:68%;"></div></div>
+          </div>
+          <table class="material-table" style="margin-top:0;">
+            <thead>
+              <tr>
+                <th>Material</th>
+                <th>Priority</th>
+                <th>Qty</th>
+                <th>DOS impact</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="mat-row-name">Anodes — 76-reg</div><div class="mat-row-type">Consumable</div></td>
+                <td><span class="priority-badge p2">P2</span></td>
+                <td><div class="qty-input-wrap"><input class="qty-input" type="number" value="5000" oninput="applyOverride(this,'r2i')"/><span class="qty-unit">anodes</span></div></td>
+                <td><div class="dos-impact ok" id="dos-76reg">+4d → 28d</div></td>
+              </tr>
+              <tr>
+                <td><div class="mat-row-name">Anodes — 75-reg</div><div class="mat-row-type">Consumable</div></td>
+                <td><span class="priority-badge p2">P2</span></td>
+                <td><div class="qty-input-wrap"><input class="qty-input" type="number" value="3200" oninput="applyOverride(this,'r2i')"/><span class="qty-unit">anodes</span></div></td>
+                <td><div class="dos-impact warn" id="dos-75reg">+3d → 14d</div></td>
+              </tr>
+              <tr>
+                <td><div class="mat-row-name">Fluoride</div><div class="mat-row-type">Consumable</div></td>
+                <td><span class="priority-badge p2">P2</span></td>
+                <td><div class="qty-input-wrap"><input class="qty-input" type="number" value="280" oninput="applyOverride(this,'r2i')"/><span class="qty-unit">mt</span></div></td>
+                <td><div class="dos-impact ok" id="dos-fluoride">+5d → 57d</div></td>
+              </tr>
+              <tr>
+                <td><div class="mat-row-name">Empty anode butt containers</div><div class="mat-row-type">Returnable packaging</div></td>
+                <td><span class="priority-badge p3">P3</span></td>
+                <td><div class="qty-input-wrap"><input class="qty-input" type="number" value="14" oninput="applyOverride(this,'r2i')"/><span class="qty-unit">containers</span></div></td>
+                <td><div class="dos-impact" style="color:var(--faint);">—</div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ISAL → Rotterdam -->
+        <div class="direction-panel">
+          <div class="direction-header">
+            <div>
+              <div class="direction-title">ISAL → Rotterdam</div>
+              <div class="direction-route">Straumsvík → Rhenus</div>
+            </div>
+            <span style="font-size:10px;color:var(--ok);font-family:var(--mono);font-weight:500;" id="i2r-tonnage">1,720t / 4,200t</span>
+          </div>
+          <div class="capacity-bar-wrap">
+            <div class="capacity-label">
+              <span>Capacity used</span>
+              <span id="i2r-pct">41%</span>
+            </div>
+            <div class="capacity-track"><div class="capacity-fill ok" id="i2r-bar" style="width:41%;"></div></div>
+          </div>
+          <table class="material-table" style="margin-top:0;">
+            <thead>
+              <tr>
+                <th>Material</th>
+                <th>Priority</th>
+                <th>Qty</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="mat-row-name">Cold metal</div><div class="mat-row-type">Waste / by-product</div></td>
+                <td><span class="priority-badge p1">P1</span></td>
+                <td><div class="qty-input-wrap"><input class="qty-input" type="number" value="480" oninput="applyOverride(this,'i2r')"/><span class="qty-unit">mt</span></div></td>
+                <td><div class="dos-impact ok">Full stock</div></td>
+              </tr>
+              <tr>
+                <td><div class="mat-row-name">Anode butts</div><div class="mat-row-type">Waste / by-product</div></td>
+                <td><span class="priority-badge p1">P1</span></td>
+                <td><div class="qty-input-wrap"><input class="qty-input" type="number" value="1240" oninput="applyOverride(this,'i2r')"/><span class="qty-unit">mt</span></div></td>
+                <td><div class="dos-impact ok">Full stock</div></td>
+              </tr>
+              <tr>
+                <td><div class="mat-row-name">Empty fluoride containers</div><div class="mat-row-type">Returnable packaging</div></td>
+                <td><span class="priority-badge p3">P3</span></td>
+                <td><div class="qty-input-wrap"><input class="qty-input" type="number" value="12" oninput="applyOverride(this,'i2r')"/><span class="qty-unit">containers</span></div></td>
+                <td><div class="dos-impact" style="color:var(--faint);">—</div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div><!-- /direction-grid -->
+
+
+    </div><!-- /plan-panel -->
+
+  </div><!-- /right-panel -->
+
+</div><!-- /content-area -->
+
+<!-- Running overlay -->
+<div id="running-overlay">
+  <span class="material-icons" style="font-size:40px;color:var(--faint);animation:spin 1.2s linear infinite;">sync</span>
+  <div style="font-size:14px;font-weight:500;color:var(--text);">Generating loading plan…</div>
+  <div style="font-size:11px;color:var(--muted);font-family:var(--mono);" id="running-status">Checking inventory levels</div>
+</div>
+
+<!-- Share modal -->
+<div class="modal-overlay" id="share-modal">
+  <div class="modal">
+    <div class="modal-title">Share loading plan</div>
+    <div class="modal-body">
+      <div class="modal-label">Send to</div>
+      <input class="modal-input" type="text" placeholder="email@riotinto.com"/>
+      <div class="modal-label" style="margin-top:4px;">Note (optional)</div>
+      <input class="modal-input" type="text" placeholder="Jun 8 charter loading plan — please review"/>
+    </div>
+    <div class="modal-actions" style="justify-content:space-between;align-items:center;">
+      <div style="display:flex;gap:8px;">
+        <button style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:none;font-family:var(--sans);font-size:11px;cursor:pointer;color:var(--muted);" onclick="document.getElementById('share-modal').style.display='none'">Cancel</button>
+        <button style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:none;font-family:var(--sans);font-size:11px;cursor:pointer;color:var(--muted);">↓ PDF</button>
+        <button style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:none;font-family:var(--sans);font-size:11px;cursor:pointer;color:var(--muted);">↓ Excel</button>
+      </div>
+      <button class="modal-btn-save" onclick="document.getElementById('share-modal').style.display='none'">Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Toggle groups ─────────────────────────────────────────────────
+  function toggleGroup(header) {
+    var body = header.nextElementSibling;
+    var chev = header.querySelector('.ig-chev');
+    if (body.style.display === 'none') {
+      body.style.display = 'flex';
+      chev.classList.remove('closed');
+      chev.classList.add('open');
+    } else {
+      body.style.display = 'none';
+      chev.classList.remove('open');
+      chev.classList.add('closed');
+    }
+  }
+
+  // ── Override input tracking ───────────────────────────────────────
+  function markOverride(input) {
+    input.classList.add('overridden');
+  }
+
+  // ── Generate plan ─────────────────────────────────────────────────
+  var _statusMessages = [
+    'Checking inventory levels…',
+    'Applying priority rules…',
+    'Optimizing tonnage allocation…',
+    'Checking capacity constraints…',
+    'Computing DOS impact…'
+  ];
+
+  function generatePlan() {
+    var overlay = document.getElementById('running-overlay');
+    overlay.style.display = 'flex';
+    var i = 0;
+    var interval = setInterval(function() {
+      var el = document.getElementById('running-status');
+      if (el && i < _statusMessages.length) el.textContent = _statusMessages[i++];
+    }, 500);
+    setTimeout(function() {
+      clearInterval(interval);
+      overlay.style.display = 'none';
+      showPlan();
+    }, 3000);
+  }
+
+  function showPlan() {
+    document.getElementById('previous-plan').style.display = 'none';
+    var pp = document.getElementById('plan-panel');
+    pp.style.display = 'flex';
+    var pill = document.getElementById('plan-pill');
+    if (pill) pill.style.display = 'inline-flex';
+  }
+
+  function discardPlan() {
+    document.getElementById('plan-panel').style.display = 'none';
+    document.getElementById('previous-plan').style.display = 'flex';
+    var pill = document.getElementById('plan-pill');
+    if (pill) pill.style.display = 'none';
+    document.querySelectorAll('.qty-input.overridden').forEach(function(i) { i.classList.remove('overridden'); });
+  }
+
+  // ── Override + recalculate ────────────────────────────────────────
+  var _recalcTimer = null;
+  function applyOverride(input, direction) {
+    input.classList.add('overridden');
+    var notice = document.getElementById('recalc-notice');
+    if (notice) notice.classList.add('visible');
+    clearTimeout(_recalcTimer);
+    _recalcTimer = setTimeout(function() {
+      if (notice) notice.classList.remove('visible');
+    }, 1800);
+  }
+
+  // ── Confirm plan ──────────────────────────────────────────────────
+  function confirmPlan() {
+    var btn = document.querySelector('.confirm-btn');
+    btn.textContent = '✓ Confirmed';
+    btn.style.background = 'var(--ok)';
+    setTimeout(function() {
+      btn.textContent = 'Confirm plan';
+      btn.style.background = '';
+    }, 2500);
+  }
+
+  // ── Share modal ───────────────────────────────────────────────────
+  function openShareModal() {
+    document.getElementById('share-modal').style.display = 'flex';
+  }
+</script>
+</body>
+</html>

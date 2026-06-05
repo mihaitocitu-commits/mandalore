@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RTA — Raw Material Inventory Dashboard</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&family=Roboto:wght@300;400&display=swap');
   @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,6 +29,14 @@
     --sans: 'IBM Plex Sans', sans-serif;
   }
 
+  /* ── KPI Card Component tokens ── */
+  :root {
+    --kpi-sans: 'DM Sans', sans-serif;
+    --kpi-sub:  'Roboto', sans-serif;
+    --kpi-radius: 4px;
+    --kpi-bg: var(--bg2);
+  }
+
   body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 13px; min-height: 100vh; }
 
   /* ── Top bar ── */
@@ -46,41 +54,70 @@
 
   /* ── Layout ── */
   .main { padding: 20px 24px; display: flex; flex-direction: column; gap: 18px; }
-  .section-label { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; color: var(--faint); text-transform: uppercase; margin-bottom: 8px; }
+  .section-label { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; color: var(--faint); text-transform: uppercase; margin-bottom: 8px; font-family: var(--kpi-sans); }
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .card { background: var(--bg2); border-radius: 4px; padding: 16px; }
+  .card.border-on  { border: 0.5px solid var(--border); box-shadow: none; }
+  .card.border-off { border: none; box-shadow: none; }
+  .card.shadow     { border: none; box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 0 1px rgba(0,0,0,0.04); }
+  .card.border-on.shadow { border: 0.5px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 0 1px rgba(0,0,0,0.04); }
   .card-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
-  .card-title { font-size: 12px; font-weight: 500; color: var(--text); }
+  .card-title { font-size: 10px; font-weight: 500; color: var(--text); letter-spacing: 0.07em; text-transform: uppercase; font-family: var(--kpi-sans); }
   .card-meta  { font-size: 10px; color: var(--faint); font-family: var(--mono); }
 
-  /* ── KPI cards ── */
+  /* ── KPI Card Component ── */
   .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+  /* Base card */
   .kpi-card {
-    background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
-    padding: 14px 16px; cursor: pointer;
-    transition: box-shadow 0.15s, border-color 0.15s;
+    background: var(--kpi-bg);
+    border-radius: var(--kpi-radius);
+    min-width: 0;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
   }
-  .kpi-card:hover { border-color: var(--border2); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-  /* At-risk cards get a left accent bar */
-  .kpi-card.at-risk { border-left: 3px solid var(--danger); }
-  .kpi-card.at-warn  { border-left: 3px solid var(--warn); }
-  /* Selection state */
-  .kpi-card.selected { border-color: var(--text); box-shadow: 0 0 0 2px var(--text); }
+  /* Attributes */
+  .kpi-card.border-on  { border: 0.5px solid var(--border); box-shadow: none; }
+  .kpi-card.border-off { border: none; box-shadow: none; }
+  .kpi-card.shadow     { border: none; box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 0 1px rgba(0,0,0,0.04); }
+  .kpi-card.border-on.shadow { border: 0.5px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 0 1px rgba(0,0,0,0.04); }
+  .kpi-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.09); }
+  .kpi-card.selected { box-shadow: 0 0 0 2px var(--text); }
   .kpi-card.dimmed { opacity: 0.3; }
 
-  .kpi-label { font-size: 10px; color: var(--muted); font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-  /* Value is always dark — status shown via card border, not text color */
-  .kpi-value { font-size: 28px; font-weight: 300; font-family: var(--mono); line-height: 1; color: var(--text); }
-  /* Danger/warn only on the status text, not the number */
-  .kpi-status { font-size: 11px; margin-top: 4px; color: var(--muted); }
+  /* Inner padding wrapper */
+  .kpi-v1 { padding: 14px 16px; }
+
+  /* Material badge */
+  .kpi-mat-badge { width: 22px; height: 22px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; font-family: var(--kpi-sans); flex-shrink: 0; }
+  .kpi-mat-badge.danger  { background: var(--danger-bg); color: var(--danger); }
+  .kpi-mat-badge.warn    { background: var(--warn-bg);   color: var(--warn); }
+  .kpi-mat-badge.neutral { background: var(--bg3);       color: var(--muted); }
+
+  /* V1 content */
+  .kpi-v1-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .kpi-v1-name   { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-family: var(--kpi-sans); }
+  .kpi-v1-value  { font-size: 32px; font-weight: 400; font-family: var(--kpi-sans); line-height: 1; color: var(--text); margin-bottom: 6px; }
+  .kpi-v1-unit   { font-size: 16px; color: var(--muted); margin-left: 4px; font-weight: 400; }
+  .kpi-v1-sub    { font-size: 11px; color: var(--muted); font-family: var(--kpi-sub); }
+  .kpi-v1-sub .s-danger { color: var(--danger); font-weight: 500; }
+  .kpi-v1-sub .s-warn   { color: var(--warn);   font-weight: 500; }
+  .kpi-v1-sub .s-ok     { color: var(--muted); }
+  .kpi-range { font-size: 10px; font-family: var(--kpi-sub); color: var(--faint); margin-top: 3px; }
+
+  /* Progress bar */
+  .progress-track { height: 3px; background: var(--bg3); border-radius: 2px; margin-top: 12px; overflow: hidden; }
+  .progress-fill  { height: 100%; border-radius: 2px; background: var(--border2); transition: width 0.6s ease; }
+  .progress-fill.danger { background: var(--danger); }
+  .progress-fill.warn   { background: var(--warn); }
+
+  /* Legacy aliases — keep for any remaining uses */
+  .kpi-label  { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-family: var(--kpi-sans); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .kpi-value  { font-size: 32px; font-weight: 400; font-family: var(--kpi-sans); line-height: 1; color: var(--text); margin-bottom: 6px; }
+  .kpi-status { font-size: 11px; color: var(--muted); font-family: var(--kpi-sub); }
   .kpi-status .s-danger { color: var(--danger); font-weight: 500; }
   .kpi-status .s-warn   { color: var(--warn);   font-weight: 500; }
   .kpi-status .s-ok     { color: var(--muted); }
-  .progress-track { height: 3px; background: var(--bg3); border-radius: 2px; margin-top: 10px; overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 2px; background: var(--border2); transition: width 0.6s ease; }
-  /* Only at-risk fills get color */
-  .progress-fill.danger { background: var(--danger); }
-  .progress-fill.warn   { background: var(--warn); }
 
   /* ── Chart ── */
   .chart-wrap { width: 100%; padding-left: 0; }
@@ -107,7 +144,7 @@
   /* ── Tables ── */
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; }
-  thead th { font-size: 10px; font-weight: 500; color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; padding: 0 0 8px 0; text-align: left; border-bottom: 1px solid var(--border); }
+  thead th { font-size: 10px; font-weight: 500; color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; padding: 0 0 8px 0; text-align: left; border-bottom: 1px solid var(--border); font-family: var(--kpi-sans); }
   tbody tr { border-bottom: 1px solid var(--border); }
   tbody tr:last-child { border-bottom: none; }
   tbody td { padding: 9px 0; font-size: 12px; color: var(--text); vertical-align: middle; }
@@ -214,6 +251,8 @@
     <nav class="nav">
       <button class="nav-item active">Dashboard</button>
       <button class="nav-item" onclick="location.href='simulation.html'">Simulate</button>
+      <button class="nav-item" onclick="location.href='optimize.html'">Optimize</button>
+      <button class="nav-item" onclick="location.href='charter.html'">Charter</button>
     </nav>
   </div>
   <div class="topbar-right">
@@ -228,25 +267,43 @@
     <div class="section-label">Inventory health — Days of supply vs. target</div>
     <div class="kpi-grid">
 
-      <div class="kpi-card at-warn" data-material="alumina" onclick="selectCard(this)">
-        <div class="kpi-label" style="display:flex;align-items:center;gap:8px;"><span class="mat-wrap"><span class="mat-icon-lg alumina at-warn">Al</span><span class="mat-tooltip"><span class="mat-tooltip-row"><span class="mat-tooltip-num">13</span><span class="mat-tooltip-sym">Al</span><span class="mat-tooltip-name">Aluminium</span></span><div class="mat-tooltip-formula">Al₂O₃ — Alumina</div></span></span>Alumina</div>
-        <div class="kpi-value">38 <span style="font-size:14px;color:var(--muted)">days</span></div>
-        <div class="kpi-status">Target 21–53 days &nbsp;·&nbsp; <span class="s-warn">below mid-range</span></div>
-        <div class="progress-track"><div class="progress-fill warn" style="width:54%"></div></div>
+      <div class="kpi-card border-off" data-material="alumina" onclick="selectCard(this)">
+        <div class="kpi-v1">
+          <div class="kpi-v1-header">
+            <span class="mat-wrap"><span class="kpi-mat-badge warn">Al</span><span class="mat-tooltip"><span class="mat-tooltip-row"><span class="mat-tooltip-num">13</span><span class="mat-tooltip-sym">Al</span><span class="mat-tooltip-name">Aluminium</span></span><div class="mat-tooltip-formula">Al₂O₃ — Alumina</div></span></span>
+            <span class="kpi-v1-name">Alumina</span>
+          </div>
+          <div class="kpi-v1-value">38<span class="kpi-v1-unit">days</span></div>
+          <div class="kpi-v1-sub">Target 21–53 days · <span class="s-warn">below mid-range</span></div>
+          <div class="kpi-range">p05–p95: 32 – 44d</div>
+          <div class="progress-track"><div class="progress-fill warn" style="width:54%"></div></div>
+        </div>
       </div>
 
-      <div class="kpi-card at-risk" data-material="anodes" onclick="selectCard(this)">
-        <div class="kpi-label" style="display:flex;align-items:center;gap:8px;"><span class="mat-wrap"><span class="mat-icon-lg anodes at-risk">C</span><span class="mat-tooltip"><span class="mat-tooltip-row"><span class="mat-tooltip-num">6</span><span class="mat-tooltip-sym">C</span><span class="mat-tooltip-name">Carbon</span></span><div class="mat-tooltip-formula">C — Baked carbon anodes</div></span></span>Anodes</div>
-        <div class="kpi-value">24 <span style="font-size:14px;color:var(--muted)">days</span></div>
-        <div class="kpi-status">Min target ~30 days &nbsp;·&nbsp; <span class="s-danger">at risk</span></div>
-        <div class="progress-track"><div class="progress-fill danger" style="width:30%"></div></div>
+      <div class="kpi-card border-off" data-material="anodes" onclick="selectCard(this)">
+        <div class="kpi-v1">
+          <div class="kpi-v1-header">
+            <span class="mat-wrap"><span class="kpi-mat-badge danger">C</span><span class="mat-tooltip"><span class="mat-tooltip-row"><span class="mat-tooltip-num">6</span><span class="mat-tooltip-sym">C</span><span class="mat-tooltip-name">Carbon</span></span><div class="mat-tooltip-formula">C — Baked carbon anodes</div></span></span>
+            <span class="kpi-v1-name">Anodes</span>
+          </div>
+          <div class="kpi-v1-value">24<span class="kpi-v1-unit">days</span></div>
+          <div class="kpi-v1-sub">Min target ~30 days · <span class="s-danger">at risk</span></div>
+          <div class="kpi-range">p05–p95: 18 – 31d</div>
+          <div class="progress-track"><div class="progress-fill danger" style="width:30%"></div></div>
+        </div>
       </div>
 
-      <div class="kpi-card" data-material="fluoride" onclick="selectCard(this)">
-        <div class="kpi-label" style="display:flex;align-items:center;gap:8px;"><span class="mat-wrap"><span class="mat-icon-lg fluoride">F</span><span class="mat-tooltip"><span class="mat-tooltip-row"><span class="mat-tooltip-num">9</span><span class="mat-tooltip-sym">F</span><span class="mat-tooltip-name">Fluorine</span></span><div class="mat-tooltip-formula">AlF₃ — Aluminium fluoride</div></span></span>Fluoride</div>
-        <div class="kpi-value">52 <span style="font-size:14px;color:var(--muted)">days</span></div>
-        <div class="kpi-status">Min target 47 days &nbsp;·&nbsp; <span class="s-ok">within range</span></div>
-        <div class="progress-track"><div class="progress-fill" style="width:72%"></div></div>
+      <div class="kpi-card border-off" data-material="fluoride" onclick="selectCard(this)">
+        <div class="kpi-v1">
+          <div class="kpi-v1-header">
+            <span class="mat-wrap"><span class="kpi-mat-badge neutral">F</span><span class="mat-tooltip"><span class="mat-tooltip-row"><span class="mat-tooltip-num">9</span><span class="mat-tooltip-sym">F</span><span class="mat-tooltip-name">Fluorine</span></span><div class="mat-tooltip-formula">AlF₃ — Aluminium fluoride</div></span></span>
+            <span class="kpi-v1-name">Fluoride</span>
+          </div>
+          <div class="kpi-v1-value">52<span class="kpi-v1-unit">days</span></div>
+          <div class="kpi-v1-sub">Min target 47 days · within range</div>
+          <div class="kpi-range">p05–p95: 48 – 56d</div>
+          <div class="progress-track"><div class="progress-fill" style="width:72%"></div></div>
+        </div>
       </div>
 
       <div class="kpi-card" style="opacity:0.4;cursor:default;pointer-events:none;">
@@ -261,7 +318,7 @@
   <div class="two-col">
 
     <!-- Stock level trend -->
-    <div class="card">
+    <div class="card border-off">
       <div class="card-header">
         <span class="card-title" id="chart-title">Stock levels — last 90 days</span>
         <span class="card-meta">Days of supply</span>
@@ -279,7 +336,7 @@
     </div>
 
     <!-- Safety stock decomposition -->
-    <div class="card">
+    <div class="card border-off">
       <div class="card-header">
         <div style="display:flex;flex-direction:column;gap:3px;">
           <span class="card-title" id="uncert-card-title">Safety stock decomposition — most at risk</span>
@@ -351,7 +408,7 @@
   <!-- ── Upcoming shipments ───────────────────────────────── -->
   <section>
     <div class="section-label">Upcoming shipments — next 30 days</div>
-    <div class="card">
+    <div class="card border-off">
       <div class="table-wrap">
         <table>
           <thead>
@@ -447,7 +504,7 @@
   <!-- ── Supplier performance ────────────────────────────── -->
   <section>
     <div class="section-label">Supplier performance — lead time vs. expected</div>
-    <div class="card">
+    <div class="card border-off">
       <div class="table-wrap">
         <table>
           <thead>
