@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Data Input — ISAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#F5F6F8; --bg2:#FFFFFF; --bg3:#ECEEF2; --fill:#E8EAF0;
+    --border:#DDE1E8; --border2:#C8CDD8;
+    --text:#1A2333; --muted:#6B7A94; --faint:#9AA3B4;
+    --ok:#1A6E38;   --ok-bg:#EBF5EF;
+    --warn:#8A5800; --warn-bg:#FEF8EC;
+    --danger:#B02818; --danger-bg:#FDECEA;
+    --modified:#185FA5; --modified-bg:#E6F1FB;
+    --sans:'IBM Plex Sans',sans-serif;
+    --mono:'IBM Plex Mono',monospace;
+    --topbar-h: 45px;
+    --subheader-h: 48px;
+    --header-total: 93px;
+  }
+
+  body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:13px; }
+
+  /* ── Fixed chrome ── */
+  .topbar {
+    position:fixed; top:0; left:0; right:0; height:var(--topbar-h);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px; background:var(--bg2); border-bottom:1px solid var(--border); z-index:200;
+  }
+  .topbar-left { display:flex; align-items:center; gap:20px; }
+  .topbar-logo  { font-size:13px; font-weight:600; color:var(--text); letter-spacing:-0.01em; }
+  .topbar-right { display:flex; align-items:center; gap:16px; }
+  .timestamp    { font-size:11px; color:var(--faint); font-family:var(--mono); }
+  .nav-item { padding:5px 12px; border-radius:6px; font-size:12px; color:var(--muted); cursor:pointer; border:none; background:none; font-family:var(--sans); font-weight:500; transition:all 0.15s; }
+  .nav-item:hover  { background:var(--bg3); color:var(--text); }
+  .nav-item.active { background:var(--bg3); color:var(--text); }
+
+  .page-header {
+    position:fixed; top:var(--topbar-h); left:0; right:0; height:var(--subheader-h);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px; background:var(--bg); border-bottom:1px solid var(--border); z-index:190;
+  }
+  .page-title { font-size:18px; font-weight:600; color:var(--text); }
+  .page-meta  { font-size:11px; color:var(--faint); font-family:var(--mono); margin-top:2px; }
+
+  /* ── Two-column layout matching simulate ── */
+  .content-area {
+    margin-top:var(--header-total);
+    display:grid;
+    grid-template-columns:320px 1fr;
+    min-height:calc(100vh - var(--header-total));
+    align-items:start;
+  }
+
+  /* ── Left panel ── */
+  .inputs-col {
+    padding:16px 0 80px 24px;
+    display:flex; flex-direction:column; gap:10px;
+    border-right:1px solid var(--border);
+    min-height:calc(100vh - var(--header-total));
+  }
+
+  /* ── Material selector ── */
+  .mat-select-wrap { position:relative; user-select:none; }
+  .mat-select-display {
+    display:flex; align-items:center; gap:10px; padding:8px 12px;
+    background:var(--bg2); border-radius:8px; cursor:pointer;
+  }
+  .mat-select-display:hover { background:var(--fill); }
+  .mat-select-label { display:flex; align-items:center; gap:8px; flex:1; }
+  .mat-select-name  { font-size:13px; font-weight:500; color:var(--text); }
+  .mat-select-chev  { font-size:10px; color:var(--faint); transition:transform 0.2s; }
+  .mat-badge { width:22px; height:22px; border-radius:5px; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; font-family:var(--mono); flex-shrink:0; }
+  .mat-badge.anodes   { background:var(--danger-bg); color:var(--danger); }
+  .mat-badge.alumina  { background:#EEF2FF; color:#3A5CC4; }
+  .mat-badge.fluoride { background:var(--ok-bg); color:var(--ok); }
+  .mat-dropdown {
+    position:absolute; top:calc(100% + 4px); left:0; right:0;
+    background:var(--bg2); border:1px solid var(--border); border-radius:8px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.1); z-index:300; display:none; overflow:hidden;
+  }
+  .mat-dropdown.open { display:block; }
+  .mat-option { display:flex; align-items:center; gap:10px; padding:8px 12px; cursor:pointer; transition:background 0.1s; font-size:12px; }
+  .mat-option:hover { background:var(--bg3); }
+
+  /* ── Input groups (matching simulate exactly) ── */
+  .input-group { background:var(--bg2); border-radius:10px; overflow:hidden; }
+  .ig-header { padding:10px 14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; }
+  .ig-header:hover { background:var(--bg3); }
+  .ig-title { font-size:10px; font-weight:500; color:var(--muted); letter-spacing:0.07em; text-transform:uppercase; font-family:var(--sans); }
+  .ig-chev  { font-size:10px; color:var(--faint); transition:transform 0.2s; }
+  .ig-chev.open { transform:rotate(180deg); }
+  .ig-body { padding:0 14px 14px; display:flex; flex-direction:column; gap:10px; }
+
+  /* ── Param rows ── */
+  .ir { display:flex; flex-direction:column; gap:4px; }
+  .ir-label { font-size:11px; color:var(--muted); }
+  .ir-field input {
+    width:100%; padding:6px 10px; border:1px solid var(--border); border-radius:6px;
+    background:var(--bg); font-size:12px; color:var(--text); font-family:var(--mono);
+    outline:none; transition:border-color 0.15s;
+  }
+  .ir-field input:focus { border-color:var(--text); background:var(--bg2); }
+  .ir-field input.edited { border-color:var(--modified); background:var(--modified-bg); }
+  .ir-baseline { font-size:10px; color:var(--faint); font-family:var(--mono); }
+  .ir-2col { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+
+  /* ── Group sub-label ── */
+  .ig-sublabel {
+    font-size:9px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--faint); padding-top:8px; padding-bottom:2px;
+    border-top:1px solid var(--border); margin-top:2px;
+  }
+  .ig-sublabel:first-child { border-top:none; padding-top:0; }
+
+  /* ── Save bar on params (bottom of input group) ── */
+  .ig-save-bar {
+    display:none; align-items:center; justify-content:space-between;
+    padding:8px 14px; background:var(--modified-bg); border-top:1px solid #A8C8F0;
+  }
+  .ig-save-bar.visible { display:flex; }
+  .ig-save-msg { font-size:10px; color:var(--modified); font-family:var(--mono); }
+  .ig-save-actions { display:flex; gap:6px; }
+
+  /* ── Right panel ── */
+  .results-col {
+    padding:16px 24px 32px;
+    display:flex; flex-direction:column; gap:12px;
+    min-height:calc(100vh - var(--header-total));
+  }
+
+  /* ── Section label ── */
+  .section-label {
+    font-size:10px; font-weight:500; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--faint); font-family:var(--sans);
+  }
+
+  /* ── Toolbar ── */
+  .table-toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .table-filter-group { display:flex; gap:6px; }
+  .filter-btn { padding:4px 10px; border-radius:5px; border:1px solid var(--border); background:var(--bg2); font-size:11px; color:var(--muted); cursor:pointer; font-family:var(--sans); transition:all 0.15s; }
+  .filter-btn:hover { border-color:var(--border2); color:var(--text); }
+  .filter-btn.active { background:var(--bg3); border-color:var(--border2); color:var(--text); font-weight:500; }
+  .toolbar-right { display:flex; align-items:center; gap:8px; }
+  .add-row-btn { display:flex; align-items:center; gap:5px; padding:6px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg2); font-size:11px; font-weight:500; color:var(--text); cursor:pointer; font-family:var(--sans); transition:all 0.15s; }
+  .add-row-btn:hover { background:var(--bg3); }
+  .add-row-btn .material-icons { font-size:14px; }
+  .toolbar-sep { width:1px; height:18px; background:var(--border2); display:none; }
+  .toolbar-sep.visible { display:block; }
+  .btn-discard-inline { padding:5px 10px; border-radius:6px; border:1px solid var(--border2); background:none; font-family:var(--sans); font-size:11px; color:var(--muted); cursor:pointer; display:none; }
+  .btn-discard-inline.visible { display:inline-flex; }
+  .btn-save-inline { padding:5px 11px; border-radius:6px; border:none; background:var(--text); color:white; font-family:var(--sans); font-size:11px; font-weight:500; cursor:pointer; display:none; }
+  .btn-save-inline.visible { display:inline-flex; }
+  .btn-save-inline:hover { opacity:0.85; }
+
+  /* ── Schedule table ── */
+  .schedule-table-wrap { overflow-x:auto; border-radius:8px; border:1px solid var(--border); }
+  .schedule-table { width:100%; border-collapse:collapse; font-size:12px; min-width:1060px; }
+  .schedule-table thead th {
+    text-align:left; padding:8px 12px; font-size:9px; font-weight:600;
+    letter-spacing:0.07em; text-transform:uppercase; color:var(--faint);
+    background:var(--bg3); border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .schedule-table thead th.group-header { text-align:center; border-left:1px solid var(--border); color:var(--muted); }
+  .schedule-table tbody tr { border-bottom:1px solid var(--fill); transition:background 0.1s; }
+  .schedule-table tbody tr:last-child { border-bottom:none; }
+  .schedule-table tbody tr:hover { background:var(--bg3); }
+  .schedule-table tbody tr.row-cancelled { opacity:0.5; }
+  .schedule-table tbody tr.row-cancelled td { color:var(--faint); }
+  .schedule-table tbody tr.row-cancelled input,
+  .schedule-table tbody tr.row-cancelled select { color:var(--faint); pointer-events:none; }
+  .schedule-table tbody tr.row-edited td:first-child { border-left:3px solid var(--modified); }
+  .schedule-table td { padding:9px 12px; color:var(--text); vertical-align:middle; }
+  .schedule-table td.divider { border-left:1px solid var(--border); }
+  /* Column widths */
+  .schedule-table td:nth-child(1), .schedule-table th:nth-child(1) { width:52px; }
+  .schedule-table td:nth-child(2), .schedule-table th:nth-child(2) { width:108px; }
+  .schedule-table td:nth-child(3), .schedule-table th:nth-child(3) { width:120px; }
+  .schedule-table td:nth-child(4), .schedule-table th:nth-child(4),
+  .schedule-table td:nth-child(5), .schedule-table th:nth-child(5),
+  .schedule-table td:nth-child(6), .schedule-table th:nth-child(6),
+  .schedule-table td:nth-child(7), .schedule-table th:nth-child(7),
+  .schedule-table td:nth-child(8), .schedule-table th:nth-child(8) { width:72px; }
+  .schedule-table td:nth-child(9),  .schedule-table th:nth-child(9)  { width:72px; }
+  .schedule-table td:nth-child(10), .schedule-table th:nth-child(10) { width:108px; }
+  .schedule-table td:nth-child(11), .schedule-table th:nth-child(11) { min-width:120px; }
+  /* Narrow subheader row (76-reg etc) */
+  .schedule-table thead tr:nth-child(2) th { padding-top:4px; padding-bottom:4px; font-size:8px; }
+  /* Vertical dividers on every column */
+  .schedule-table td, .schedule-table th { border-right:1px solid var(--border); }
+  .schedule-table td:last-child, .schedule-table th:last-child { border-right:none; }
+  /* White background on body rows */
+  .schedule-table tbody tr { background:var(--bg2); }
+  .schedule-table tbody tr:hover { background:var(--bg3); }
+
+  /* ── Inline cell editing ── */
+  .cell-input {
+    width:100%; padding:4px 6px; border:1px solid transparent; border-radius:4px;
+    background:transparent; font-size:12px; font-family:inherit; color:var(--text); outline:none;
+  }
+  .cell-input:focus { border-color:var(--modified); background:var(--modified-bg); }
+  .cell-input.edited { background:var(--modified-bg); color:var(--modified); border-color:var(--modified); }
+  .cell-select {
+    width:100%; padding:4px 6px; border:1px solid transparent; border-radius:4px;
+    background:transparent; font-size:12px; font-family:var(--sans); color:var(--text);
+    outline:none; cursor:pointer; appearance:none;
+  }
+  .cell-select:focus { border-color:var(--modified); background:var(--modified-bg); }
+  .cell-select.edited { background:var(--modified-bg); color:var(--modified); border-color:var(--modified); }
+
+  /* ── Status badges ── */
+  .status-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:500; white-space:nowrap; }
+  .status-badge.ordered   { background:var(--bg3); color:var(--muted); }
+  .status-badge.confirmed { background:var(--warn-bg); color:var(--warn); }
+  .status-badge.received  { background:var(--ok-bg); color:var(--ok); }
+  .status-badge.cancelled { background:var(--bg3); color:var(--faint); text-decoration:line-through; }
+  .status-dot { width:5px; height:5px; border-radius:50%; background:currentColor; }
+
+  /* ── Received toggle ── */
+  .received-toggle { display:flex; align-items:center; gap:6px; padding:10px 12px; font-size:11px; color:var(--muted); cursor:pointer; border-top:1px solid var(--border); border-radius:0 0 8px 8px; user-select:none; }
+  .received-toggle:hover { background:var(--bg3); }
+  .received-toggle .material-icons { font-size:14px; }
+
+  /* ── Shared buttons ── */
+  .btn-ghost  { padding:6px 12px; border-radius:6px; border:1px solid var(--border2); background:none; font-family:var(--sans); font-size:11px; color:var(--muted); cursor:pointer; }
+  .btn-dark   { padding:6px 14px; border-radius:6px; border:none; background:var(--text); color:white; font-family:var(--sans); font-size:11px; font-weight:500; cursor:pointer; }
+  .btn-dark:hover { opacity:0.85; }
+
+  /* ── Confirmation modal ── */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:600; display:none; align-items:center; justify-content:center; }
+  .modal-overlay.visible { display:flex; }
+  .modal { background:var(--bg2); border-radius:12px; padding:24px; width:420px; max-width:calc(100vw - 48px); box-shadow:0 8px 32px rgba(0,0,0,0.15); }
+  .modal-title { font-size:15px; font-weight:500; margin-bottom:4px; }
+  .modal-sub   { font-size:12px; color:var(--muted); margin-bottom:16px; }
+  .modal-diff  { background:var(--bg3); border-radius:8px; padding:12px 14px; margin-bottom:20px; font-family:var(--mono); font-size:11px; line-height:2; }
+  .modal-diff-row { display:flex; gap:8px; align-items:baseline; }
+  .diff-label { color:var(--faint); min-width:160px; }
+  .diff-old   { color:var(--danger); text-decoration:line-through; }
+  .diff-arrow { color:var(--faint); }
+  .diff-new   { color:var(--ok); font-weight:500; }
+  .modal-actions { display:flex; gap:8px; justify-content:flex-end; }
+  .modal-btn-cancel  { padding:8px 16px; border-radius:6px; border:1px solid var(--border2); background:none; font-family:var(--sans); font-size:12px; cursor:pointer; color:var(--muted); }
+  .modal-btn-confirm { padding:8px 20px; border-radius:6px; border:none; background:var(--text); color:white; font-family:var(--sans); font-size:12px; font-weight:500; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-logo">ISAL Console</span>
+    <button class="nav-item" onclick="location.href='dashboard.html'">Dashboard</button>
+    <button class="nav-item" onclick="location.href='simulation.html'">Simulate</button>
+    <button class="nav-item" onclick="location.href='optimize.html'">Optimize</button>
+    <button class="nav-item" onclick="location.href='charter.html'">Charter</button>
+    <button class="nav-item active">Data Input</button>
+  </div>
+  <div class="topbar-right">
+    <span class="timestamp">ISAL · May 21, 2026 · 09:14</span>
+  </div>
+</div>
+
+<!-- Page header -->
+<div class="page-header">
+  <div>
+    <div class="page-title">Data Input</div>
+    <div class="page-meta" id="page-meta">Planning parameters and delivery schedules · ISAL</div>
+  </div>
+</div>
+
+<div class="content-area">
+
+  <!-- ── LEFT PANEL — Planning parameters ── -->
+  <div class="inputs-col">
+
+    <!-- Material selector -->
+    <div class="mat-select-wrap">
+      <div class="mat-select-display" onclick="toggleMatDrop()">
+        <div class="mat-select-label">
+          <span class="mat-badge anodes" id="mat-badge">C</span>
+          <span class="mat-select-name" id="mat-name">Anodes</span>
+        </div>
+        <span class="mat-select-chev" id="mat-chev">▾</span>
+      </div>
+      <div class="mat-dropdown" id="mat-dropdown">
+        <div class="mat-option" onclick="selectMaterial('anodes')">
+          <span class="mat-badge anodes">C</span>Anodes
+        </div>
+        <div class="mat-option" onclick="selectMaterial('alumina')">
+          <span class="mat-badge alumina">Al</span>Alumina
+        </div>
+        <div class="mat-option" onclick="selectMaterial('fluoride')">
+          <span class="mat-badge fluoride">F</span>Fluoride
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ANODES PARAMS ── -->
+    <div id="params-anodes">
+
+      <div class="input-group">
+        <div class="ig-header" onclick="toggleIG(this)">
+          <span class="ig-title">Anode cycle</span>
+          <span class="ig-chev open">▾</span>
+        </div>
+        <div class="ig-body">
+          <div class="ir-2col">
+            <div class="ir">
+              <div class="ir-label">Code 76</div>
+              <div class="ir-field"><input type="number" value="30" oninput="markParamEdited(this,'anodes')" id="p-cycle-76"/></div>
+              <div class="ir-baseline">days</div>
+            </div>
+            <div class="ir">
+              <div class="ir-label">Code 75</div>
+              <div class="ir-field"><input type="number" value="28" oninput="markParamEdited(this,'anodes')" id="p-cycle-75"/></div>
+              <div class="ir-baseline">days</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="ig-header" onclick="toggleIG(this)">
+          <span class="ig-title">Active pots</span>
+          <span class="ig-chev open">▾</span>
+        </div>
+        <div class="ig-body">
+          <div class="ir-2col">
+            <div class="ir">
+              <div class="ir-label">Potroom 1 &amp; 2</div>
+              <div class="ir-field"><input type="number" value="160" oninput="markParamEdited(this,'anodes')" id="p-pots-12"/></div>
+              <div class="ir-baseline">pots</div>
+            </div>
+            <div class="ir">
+              <div class="ir-label">Potroom 3</div>
+              <div class="ir-field"><input type="number" value="140" oninput="markParamEdited(this,'anodes')" id="p-pots-3"/></div>
+              <div class="ir-baseline">pots</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="ig-header" onclick="toggleIG(this)">
+          <span class="ig-title">Weekly consumption</span>
+          <span class="ig-chev open">▾</span>
+        </div>
+        <div class="ig-body">
+          <div class="ig-sublabel">Code 76</div>
+          <div class="ir-2col">
+            <div class="ir">
+              <div class="ir-label">76-reg</div>
+              <div class="ir-field"><input type="number" value="255" oninput="markParamEdited(this,'anodes')" id="p-cons-76r"/></div>
+              <div class="ir-baseline">anodes/week</div>
+            </div>
+            <div class="ir">
+              <div class="ir-label">76-start</div>
+              <div class="ir-field"><input type="number" value="30" oninput="markParamEdited(this,'anodes')" id="p-cons-76s"/></div>
+              <div class="ir-baseline">anodes/week</div>
+            </div>
+          </div>
+          <div class="ig-sublabel">Code 75</div>
+          <div class="ir-2col">
+            <div class="ir">
+              <div class="ir-label">75-reg</div>
+              <div class="ir-field"><input type="number" value="128" oninput="markParamEdited(this,'anodes')" id="p-cons-75r"/></div>
+              <div class="ir-baseline">anodes/week</div>
+            </div>
+            <div class="ir">
+              <div class="ir-label">75-start</div>
+              <div class="ir-field"><input type="number" value="20" oninput="markParamEdited(this,'anodes')" id="p-cons-75s"/></div>
+              <div class="ir-baseline">anodes/week</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="ig-header" onclick="toggleIG(this)">
+          <span class="ig-title">Thresholds</span>
+          <span class="ig-chev open">▾</span>
+        </div>
+        <div class="ig-body">
+          <div class="ir">
+            <div class="ir-label">Min stock when ship arrives</div>
+            <div class="ir-field"><input type="number" value="7" oninput="markParamEdited(this,'anodes')" id="p-min-stock"/></div>
+            <div class="ir-baseline">days</div>
+          </div>
+        </div>
+        <div class="ig-save-bar" id="params-save-bar-anodes">
+          <span class="ig-save-msg">Unsaved changes</span>
+          <div class="ig-save-actions">
+            <button class="btn-ghost" onclick="discardParams('anodes')">Discard</button>
+            <button class="btn-dark" onclick="openSaveModal('params','anodes')">Save</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /params-anodes -->
+
+    <!-- ── ALUMINA PARAMS ── -->
+    <div id="params-alumina" style="display:none;">
+
+      <div class="input-group">
+        <div class="ig-header" onclick="toggleIG(this)">
+          <span class="ig-title">Consumption &amp; targets</span>
+          <span class="ig-chev open">▾</span>
+        </div>
+        <div class="ig-body">
+          <div class="ir">
+            <div class="ir-label">Daily consumption</div>
+            <div class="ir-field"><input type="number" value="1100" oninput="markParamEdited(this,'alumina')"/></div>
+            <div class="ir-baseline">mt/day</div>
+          </div>
+          <div class="ir-2col">
+            <div class="ir">
+              <div class="ir-label">Inventory target — min</div>
+              <div class="ir-field"><input type="number" value="23000" oninput="markParamEdited(this,'alumina')"/></div>
+              <div class="ir-baseline">mt (21 days)</div>
+            </div>
+            <div class="ir">
+              <div class="ir-label">Inventory target — max</div>
+              <div class="ir-field"><input type="number" value="59000" oninput="markParamEdited(this,'alumina')"/></div>
+              <div class="ir-baseline">mt (53 days)</div>
+            </div>
+          </div>
+          <div class="ir">
+            <div class="ir-label">Silo capacity</div>
+            <div class="ir-field"><input type="number" value="62500" oninput="markParamEdited(this,'alumina')"/></div>
+            <div class="ir-baseline">mt</div>
+          </div>
+        </div>
+        <div class="ig-save-bar" id="params-save-bar-alumina">
+          <span class="ig-save-msg">Unsaved changes</span>
+          <div class="ig-save-actions">
+            <button class="btn-ghost" onclick="discardParams('alumina')">Discard</button>
+            <button class="btn-dark" onclick="openSaveModal('params','alumina')">Save</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /params-alumina -->
+
+    <!-- ── FLUORIDE PARAMS ── -->
+    <div id="params-fluoride" style="display:none;">
+
+      <div class="input-group">
+        <div class="ig-header" onclick="toggleIG(this)">
+          <span class="ig-title">Consumption &amp; targets</span>
+          <span class="ig-chev open">▾</span>
+        </div>
+        <div class="ig-body">
+          <div class="ir">
+            <div class="ir-label">Daily consumption</div>
+            <div class="ir-field"><input type="number" value="11" oninput="markParamEdited(this,'fluoride')"/></div>
+            <div class="ir-baseline">mt/day · rising since 2024</div>
+          </div>
+          <div class="ir">
+            <div class="ir-label">Inventory target — min</div>
+            <div class="ir-field"><input type="number" value="518" oninput="markParamEdited(this,'fluoride')"/></div>
+            <div class="ir-baseline">mt (~47 days)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="ig-header" onclick="toggleIG(this)">
+          <span class="ig-title">Lead times</span>
+          <span class="ig-chev open">▾</span>
+        </div>
+        <div class="ig-body">
+          <div class="ir-2col">
+            <div class="ir">
+              <div class="ir-label">Alufluor (avg)</div>
+              <div class="ir-field"><input type="number" value="21" oninput="markParamEdited(this,'fluoride')"/></div>
+              <div class="ir-baseline">days</div>
+            </div>
+            <div class="ir">
+              <div class="ir-label">Elixir (avg)</div>
+              <div class="ir-field"><input type="number" value="42" oninput="markParamEdited(this,'fluoride')"/></div>
+              <div class="ir-baseline">days (max 70d)</div>
+            </div>
+          </div>
+        </div>
+        <div class="ig-save-bar" id="params-save-bar-fluoride">
+          <span class="ig-save-msg">Unsaved changes</span>
+          <div class="ig-save-actions">
+            <button class="btn-ghost" onclick="discardParams('fluoride')">Discard</button>
+            <button class="btn-dark" onclick="openSaveModal('params','fluoride')">Save</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /params-fluoride -->
+
+  </div><!-- /inputs-col -->
+
+  <!-- ── RIGHT PANEL — Delivery schedule ── -->
+  <div class="results-col">
+
+    <div class="table-toolbar">
+      <div class="table-filter-group">
+        <button class="filter-btn active" onclick="setFilter(this)">Upcoming</button>
+        <button class="filter-btn" onclick="setFilter(this)">All</button>
+      </div>
+      <div class="toolbar-right">
+        <button class="add-row-btn" onclick="addRow()">
+          <span class="material-icons">add</span>
+          Add vessel
+        </button>
+        <div class="toolbar-sep" id="toolbar-sep"></div>
+        <button class="btn-discard-inline" id="discard-inline" onclick="discardSchedule()">Discard</button>
+        <button class="btn-save-inline"    id="save-inline"    onclick="openSaveModal('schedule', _currentMat)">Save changes</button>
+      </div>
+    </div>
+
+    <!-- Anodes table -->
+    <div id="table-wrap-anodes">
+      <div class="schedule-table-wrap">
+        <table class="schedule-table" id="table-anodes">
+          <thead>
+            <tr>
+              <th>Week</th>
+              <th>ETA ISAL</th>
+              <th>Supplier</th>
+              <th class="divider group-header" colspan="2">Code 76</th>
+              <th class="divider group-header" colspan="3">Code 75</th>
+              <th class="divider">Total</th>
+              <th>Status</th>
+              <th>Notes</th>
+            </tr>
+            <tr>
+              <th></th><th></th><th></th>
+              <th class="divider">76-reg</th><th>76-start</th>
+              <th class="divider">75-reg</th><th>75-start</th><th>75-L&amp;R</th>
+              <th class="divider"></th><th></th><th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-anodes"></tbody>
+        </table>
+      </div>
+      <div class="received-toggle" onclick="toggleReceived('anodes')">
+        <span class="material-icons">expand_more</span>
+        <span id="received-label-anodes">Show 8 received deliveries</span>
+      </div>
+    </div>
+
+    <!-- Alumina table -->
+    <div id="table-wrap-alumina" style="display:none;">
+      <div class="schedule-table-wrap">
+        <table class="schedule-table" id="table-alumina">
+          <thead>
+            <tr>
+              <th>ETA ISAL</th>
+              <th>Supplier</th>
+              <th>Quantity (mt)</th>
+              <th>Status</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-alumina"></tbody>
+        </table>
+      </div>
+      <div class="received-toggle" onclick="toggleReceived('alumina')">
+        <span class="material-icons">expand_more</span>
+        <span>Show 4 received deliveries</span>
+      </div>
+    </div>
+
+    <!-- Fluoride table -->
+    <div id="table-wrap-fluoride" style="display:none;">
+      <div class="schedule-table-wrap">
+        <table class="schedule-table" id="table-fluoride">
+          <thead>
+            <tr>
+              <th>ETA ISAL</th>
+              <th>Supplier</th>
+              <th>Quantity (mt)</th>
+              <th>Status</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-fluoride"></tbody>
+        </table>
+      </div>
+      <div class="received-toggle" onclick="toggleReceived('fluoride')">
+        <span class="material-icons">expand_more</span>
+        <span>Show 5 received deliveries</span>
+      </div>
+    </div>
+
+  </div><!-- /results-col -->
+</div><!-- /content-area -->
+
+<!-- Save confirmation modal -->
+<div class="modal-overlay" id="save-modal">
+  <div class="modal">
+    <div class="modal-title" id="save-modal-title">Save changes?</div>
+    <div class="modal-sub"   id="save-modal-sub">Review what you're about to save.</div>
+    <div class="modal-diff"  id="save-modal-diff"></div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" onclick="closeSaveModal()">Cancel</button>
+      <button class="modal-btn-confirm" onclick="confirmSave()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var _currentMat = 'anodes';
+var _editedParams = {};
+var _editedSchedule = {};  // key: "rowId-field", value: { rowId, field, label, eta, supplier, oldVal, newVal }
+var _pendingSave = { type: null, material: null };
+
+// Column label map for human-readable diff
+var _colLabels = {
+  eta:'ETA ISAL', supplier:'Supplier',
+  r76:'76-reg', s76:'76-start', r75:'75-reg', s75:'75-start', lr75:'75-L&R',
+  qty:'Quantity', status:'Status', notes:'Notes'
+};
+
+var _anodesRows = [
+  { id:1, week:'23', eta:'Jun 8',  supplier:'Sunstone', r76:2000, s76:0,   r75:1800, s75:0, lr75:0, status:'confirmed', notes:'' },
+  { id:2, week:'25', eta:'Jun 22', supplier:'Wanfang',  r76:2500, s76:200, r75:0,    s75:0, lr75:0, status:'ordered',   notes:'± 5d confidence' },
+  { id:3, week:'28', eta:'Jul 8',  supplier:'MZAS',     r76:1800, s76:0,   r75:1200, s75:100, lr75:0, status:'ordered', notes:'' },
+  { id:4, week:'30', eta:'Jul 28', supplier:'Sunstone', r76:2000, s76:0,   r75:1500, s75:0, lr75:200, status:'ordered', notes:'' },
+  { id:5, week:'34', eta:'Aug 19', supplier:'Wanfang',  r76:2200, s76:300, r75:0,    s75:0, lr75:0, status:'ordered',   notes:'' },
+];
+var _alumRows = [
+  { id:1, eta:'Jun 3',  supplier:'Alunorte', qty:35000, status:'confirmed', notes:'' },
+  { id:2, eta:'Jun 24', supplier:'Alunorte', qty:37000, status:'ordered',   notes:'' },
+  { id:3, eta:'Jul 15', supplier:'Alunorte', qty:36000, status:'ordered',   notes:'' },
+];
+var _fluorRows = [
+  { id:1, eta:'Jun 10', supplier:'Alufluor', qty:200, status:'confirmed', notes:'' },
+  { id:2, eta:'Jun 28', supplier:'Elixir',   qty:180, status:'ordered',   notes:'Lead time variability ±14d' },
+  { id:3, eta:'Jul 20', supplier:'Alufluor', qty:220, status:'ordered',   notes:'' },
+];
+
+// ── Material selection ────────────────────────────────────────────────
+function selectMaterial(mat) {
+  _currentMat = mat;
+  document.getElementById('mat-dropdown').classList.remove('open');
+  // Badge + name
+  var badges = { anodes:'C', alumina:'Al', fluoride:'F' };
+  var names  = { anodes:'Anodes', alumina:'Alumina', fluoride:'Fluoride' };
+  var badge = document.getElementById('mat-badge');
+  badge.textContent = badges[mat];
+  badge.className = 'mat-badge ' + mat;
+  document.getElementById('mat-name').textContent = names[mat];
+  // Show/hide param sections
+  ['anodes','alumina','fluoride'].forEach(function(m) {
+    document.getElementById('params-' + m).style.display = m === mat ? 'flex' : 'none';
+    document.getElementById('table-wrap-' + m).style.display = m === mat ? 'block' : 'none';
+  });
+  document.getElementById('params-' + mat).style.display = 'flex';
+  document.getElementById('params-' + mat).style.flexDirection = 'column';
+  document.getElementById('params-' + mat).style.gap = '10px';
+  // Reset toolbar inline buttons
+  hideInlineButtons();
+  // Update page meta
+  var metas = { anodes:'Anodes · delivery schedules and planning parameters · ISAL', alumina:'Alumina · delivery schedules and planning parameters · ISAL', fluoride:'Fluoride · delivery schedules and planning parameters · ISAL' };
+  document.getElementById('page-meta').textContent = metas[mat];
+  renderTable(mat);
+}
+
+function toggleMatDrop() {
+  var dd = document.getElementById('mat-dropdown');
+  dd.classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.mat-select-wrap')) document.getElementById('mat-dropdown').classList.remove('open');
+});
+
+// ── Input group toggle ────────────────────────────────────────────────
+function toggleIG(header) {
+  var body = header.nextElementSibling;
+  var chev = header.querySelector('.ig-chev');
+  var isOpen = chev.classList.contains('open');
+  body.style.display = isOpen ? 'none' : 'flex';
+  chev.classList.toggle('open', !isOpen);
+}
+
+// ── Planning parameters ───────────────────────────────────────────────
+function markParamEdited(input, mat) {
+  input.classList.add('edited');
+  _editedParams[input.id || 'field-' + Date.now()] = {
+    old: input.defaultValue, new: input.value,
+    label: input.closest('.ir').querySelector('.ir-label').textContent
+  };
+  document.getElementById('params-save-bar-' + mat).classList.add('visible');
+}
+
+function discardParams(mat) {
+  document.querySelectorAll('#params-' + mat + ' input.edited').forEach(function(inp) {
+    inp.value = inp.defaultValue;
+    inp.classList.remove('edited');
+  });
+  _editedParams = {};
+  document.getElementById('params-save-bar-' + mat).classList.remove('visible');
+}
+
+// ── Table rendering ───────────────────────────────────────────────────
+function renderTable(mat) {
+  var rows = mat === 'anodes' ? _anodesRows : mat === 'alumina' ? _alumRows : _fluorRows;
+  var tbody = document.getElementById('tbody-' + mat);
+  tbody.innerHTML = '';
+  rows.forEach(function(row) {
+    tbody.appendChild(mat === 'anodes' ? makeAnodesRow(row) : makeSimpleRow(row, mat));
+  });
+}
+
+function statusBadge(status) {
+  var labels = { ordered:'Ordered', confirmed:'Confirmed', received:'Received', cancelled:'Cancelled' };
+  return '<span class="status-badge ' + status + '"><span class="status-dot"></span>' + (labels[status]||status) + '</span>';
+}
+
+function makeAnodesRow(row) {
+  var tr = document.createElement('tr');
+  if (row.received) tr.classList.add('row-received');
+  var total = (row.r76||0)+(row.s76||0)+(row.r75||0)+(row.s75||0)+(row.lr75||0);
+  var ro = row.received ? 'readonly' : '';
+  var dis = row.received ? 'disabled' : '';
+  var statusOpts = ['ordered','confirmed','cancelled'].map(function(s) {
+    return '<option value="'+s+'"'+(row.status===s?' selected':'')+'>'+(s==='ordered'?'Ordered':s==='confirmed'?'Confirmed':'Cancelled')+'</option>';
+  }).join('');
+  var dr = 'data-row-id="'+row.id+'"';
+  tr.innerHTML =
+    '<td style="font-family:var(--mono);">' + (row.week||'—') + '</td>' +
+    '<td><input class="cell-input" value="'+row.eta+'" '+ro+' '+dr+' data-field="eta" data-orig="'+row.eta+'" oninput="markRowEdited(this)"/></td>' +
+    '<td><select class="cell-select" '+dis+' '+dr+' data-field="supplier" data-orig="'+row.supplier+'" onchange="markRowEdited(this)">'+['Wanfang','Sunstone','MZAS','Aluchemie'].map(function(s){return '<option'+(row.supplier===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></td>' +
+    '<td class="divider"><input class="cell-input" type="number" value="'+row.r76+'" '+ro+' '+dr+' data-field="r76" data-orig="'+row.r76+'" oninput="markRowEdited(this)"/></td>' +
+    '<td><input class="cell-input" type="number" value="'+row.s76+'" '+ro+' '+dr+' data-field="s76" data-orig="'+row.s76+'" oninput="markRowEdited(this)"/></td>' +
+    '<td class="divider"><input class="cell-input" type="number" value="'+row.r75+'" '+ro+' '+dr+' data-field="r75" data-orig="'+row.r75+'" oninput="markRowEdited(this)"/></td>' +
+    '<td><input class="cell-input" type="number" value="'+row.s75+'" '+ro+' '+dr+' data-field="s75" data-orig="'+row.s75+'" oninput="markRowEdited(this)"/></td>' +
+    '<td><input class="cell-input" type="number" value="'+row.lr75+'" '+ro+' '+dr+' data-field="lr75" data-orig="'+row.lr75+'" oninput="markRowEdited(this)"/></td>' +
+    '<td class="divider" style="font-family:var(--mono);">' + total.toLocaleString() + '</td>' +
+    '<td>' + (row.received ? statusBadge('received') : '<select class="cell-select" '+dr+' data-field="status" data-orig="'+row.status+'" onchange="markRowEdited(this)">'+statusOpts+'</select>') + '</td>' +
+    '<td><input class="cell-input" value="'+(row.notes||'')+'" placeholder="—" '+ro+' '+dr+' data-field="notes" data-orig="'+(row.notes||'')+'" oninput="markRowEdited(this)"/></td>';
+  return tr;
+}
+
+function makeSimpleRow(row, mat) {
+  var suppliers = mat === 'alumina' ? ['Alunorte'] : ['Alufluor','Elixir'];
+  var tr = document.createElement('tr');
+  if (row.received) tr.classList.add('row-received');
+  var ro = row.received ? 'readonly' : '';
+  var dis = row.received ? 'disabled' : '';
+  var statusOpts = ['ordered','confirmed','cancelled'].map(function(s) {
+    return '<option value="'+s+'"'+(row.status===s?' selected':'')+'>'+(s==='ordered'?'Ordered':s==='confirmed'?'Confirmed':'Cancelled')+'</option>';
+  }).join('');
+  var dr = 'data-row-id="'+row.id+'"';
+  tr.innerHTML =
+    '<td><input class="cell-input" value="'+row.eta+'" '+ro+' '+dr+' data-field="eta" data-orig="'+row.eta+'" oninput="markRowEdited(this)"/></td>' +
+    '<td><select class="cell-select" '+dis+' '+dr+' data-field="supplier" data-orig="'+row.supplier+'" onchange="markRowEdited(this)">'+suppliers.map(function(s){return '<option'+(row.supplier===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></td>' +
+    '<td><input class="cell-input" type="number" value="'+row.qty+'" '+ro+' '+dr+' data-field="qty" data-orig="'+row.qty+'" oninput="markRowEdited(this)"/></td>' +
+    '<td>' + (row.received ? statusBadge('received') : '<select class="cell-select" '+dr+' data-field="status" data-orig="'+row.status+'" onchange="markRowEdited(this)">'+statusOpts+'</select>') + '</td>' +
+    '<td><input class="cell-input" value="'+(row.notes||'')+'" placeholder="—" '+ro+' '+dr+' data-field="notes" data-orig="'+(row.notes||'')+'" oninput="markRowEdited(this)"/></td>';
+  return tr;
+}
+
+// ── Row editing ───────────────────────────────────────────────────────
+function markRowEdited(input) {
+  var tr = input.closest('tr');
+  tr.classList.add('row-edited');
+  input.classList.add('edited');
+
+  // Apply cancelled visual immediately
+  if (input.tagName === 'SELECT' && input.value === 'cancelled') {
+    tr.classList.add('row-cancelled');
+  } else if (input.tagName === 'SELECT' && input.dataset.field === 'status') {
+    tr.classList.remove('row-cancelled');
+  }
+
+  // Track the change with full context
+  var rowId   = input.dataset.rowId;
+  var field   = input.dataset.field;
+  var origVal = input.dataset.orig;
+  var newVal  = input.value;
+  var key     = rowId + '-' + field;
+
+  // Find the row context (eta + supplier) for the description
+  var rowEta      = tr.querySelector('[data-field="eta"]')      ? tr.querySelector('[data-field="eta"]').value      : '—';
+  var rowSupplier = tr.querySelector('[data-field="supplier"]') ? tr.querySelector('[data-field="supplier"]').value : '—';
+
+  if (newVal !== origVal) {
+    _editedSchedule[key] = {
+      rowId: rowId, field: field,
+      label: _colLabels[field] || field,
+      eta: rowEta, supplier: rowSupplier,
+      oldVal: origVal, newVal: newVal
+    };
+  } else {
+    // Reverted to original — remove from tracked changes
+    delete _editedSchedule[key];
+    input.classList.remove('edited');
+    if (Object.keys(_editedSchedule).length === 0) {
+      tr.classList.remove('row-edited');
+    }
+  }
+
+  if (Object.keys(_editedSchedule).length > 0) {
+    showInlineButtons();
+  } else {
+    hideInlineButtons();
+  }
+}
+
+function showInlineButtons() {
+  document.getElementById('discard-inline').classList.add('visible');
+  document.getElementById('save-inline').classList.add('visible');
+  document.getElementById('toolbar-sep').classList.add('visible');
+}
+
+function hideInlineButtons() {
+  document.getElementById('discard-inline').classList.remove('visible');
+  document.getElementById('save-inline').classList.remove('visible');
+  document.getElementById('toolbar-sep').classList.remove('visible');
+}
+
+function addRow() {
+  var mat = _currentMat;
+  var newId = Date.now();
+  if (mat === 'anodes') {
+    _anodesRows.unshift({ id:newId, week:'—', eta:'', supplier:'Wanfang', r76:0, s76:0, r75:0, s75:0, lr75:0, status:'ordered', notes:'' });
+  } else if (mat === 'alumina') {
+    _alumRows.unshift({ id:newId, eta:'', supplier:'Alunorte', qty:0, status:'ordered', notes:'' });
+  } else {
+    _fluorRows.unshift({ id:newId, eta:'', supplier:'Alufluor', qty:0, status:'ordered', notes:'' });
+  }
+  renderTable(mat);
+  var firstInput = document.querySelector('#tbody-' + mat + ' tr .cell-input');
+  if (firstInput) firstInput.focus();
+  showInlineButtons();
+}
+
+function discardSchedule() {
+  _editedSchedule = {};
+  renderTable(_currentMat);
+  hideInlineButtons();
+}
+
+function setFilter(btn) {
+  btn.closest('.table-filter-group').querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+function toggleReceived(mat) {
+  var toggle = document.getElementById('received-toggle-' + mat) || event.currentTarget;
+  var label  = document.getElementById('received-label-' + mat);
+  var icon   = toggle.querySelector('.material-icons');
+  if (label) label.textContent = label.textContent.startsWith('Show') ? 'Hide received deliveries' : 'Show 8 received deliveries';
+  if (icon)  icon.textContent = icon.textContent === 'expand_more' ? 'expand_less' : 'expand_more';
+}
+
+// ── Save modal ────────────────────────────────────────────────────────
+function openSaveModal(type, mat) {
+  _pendingSave = { type: type, material: mat };
+  var titles = { params: 'Save planning parameters?', schedule: 'Save delivery schedule?' };
+  var subs   = { params: 'These values feed the simulation engine. Changes take effect on the next simulation run.', schedule: 'Changes to the delivery schedule will be reflected in future simulations.' };
+  document.getElementById('save-modal-title').textContent = titles[type];
+  document.getElementById('save-modal-sub').textContent = subs[type];
+  var diff = document.getElementById('save-modal-diff');
+
+  if (type === 'params' && Object.keys(_editedParams).length > 0) {
+    diff.innerHTML = Object.values(_editedParams).map(function(e) {
+      return '<div class="modal-diff-row"><span class="diff-label">'+e.label+'</span><span class="diff-old">'+e.old+'</span><span class="diff-arrow">→</span><span class="diff-new">'+e.new+'</span></div>';
+    }).join('');
+
+  } else if (type === 'schedule') {
+    var changes = Object.values(_editedSchedule);
+    if (changes.length === 0) {
+      // New rows added — no field-level diffs yet
+      diff.innerHTML = '<div style="color:var(--muted);font-size:11px;">New vessel added.</div>';
+    } else {
+      diff.innerHTML = changes.map(function(c) {
+        var context = 'shipment ' + c.eta + ' · ' + c.supplier;
+        return '<div class="modal-diff-row" style="flex-wrap:wrap;gap:4px;">' +
+          '<span class="diff-label" style="min-width:100%;color:var(--text);font-weight:500;">' + c.label + '</span>' +
+          '<span class="diff-label" style="min-width:100%;font-size:10px;color:var(--faint);">' + context + '</span>' +
+          '<span class="diff-old">' + c.oldVal + '</span>' +
+          '<span class="diff-arrow">→</span>' +
+          '<span class="diff-new">' + c.newVal + '</span>' +
+          '</div>';
+      }).join('<div style="border-top:1px solid var(--border);margin:6px 0;"></div>');
+    }
+  } else {
+    diff.innerHTML = '<div style="color:var(--muted);font-size:11px;">No changes detected.</div>';
+  }
+
+  document.getElementById('save-modal').classList.add('visible');
+}
+
+function closeSaveModal() { document.getElementById('save-modal').classList.remove('visible'); }
+
+function confirmSave() {
+  var type = _pendingSave.type, mat = _pendingSave.material;
+  closeSaveModal();
+  if (type === 'params') {
+    document.querySelectorAll('#params-' + mat + ' input.edited').forEach(function(inp) {
+      inp.defaultValue = inp.value; inp.classList.remove('edited');
+    });
+    _editedParams = {};
+    document.getElementById('params-save-bar-' + mat).classList.remove('visible');
+  } else {
+    _editedSchedule = {};
+    document.querySelectorAll('#table-' + mat + ' .edited').forEach(function(el) { el.classList.remove('edited'); });
+    document.querySelectorAll('#table-' + mat + ' tr.row-edited').forEach(function(tr) { tr.classList.remove('row-edited'); });
+    hideInlineButtons();
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────
+selectMaterial('anodes');
+</script>
+</body>
+</html>
