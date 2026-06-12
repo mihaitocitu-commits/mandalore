@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Data Input — ISAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#F5F6F8; --bg2:#FFFFFF; --bg3:#ECEEF2; --fill:#E8EAF0;
+  --border:#DDE1E8; --border2:#C8CDD8;
+  --text:#1A2333; --muted:#6B7A94; --faint:#9AA3B4;
+  --ok:#1A6E38; --ok-bg:#EBF5EF;
+  --warn:#8A5800; --warn-bg:#FEF8EC;
+  --danger:#B02818; --danger-bg:#FDECEA;
+  --modified:#185FA5; --modified-bg:#E6F1FB;
+  --sans:'IBM Plex Sans',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --pageheader-h:56px; --sidebar-w:224px; --chrome:56px;
+}
+body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:13px; }
+
+
+/* ── Page header (fixed, below topbar) ── */
+.page-header {
+  position:fixed; top:0; left:0; right:0; height:var(--pageheader-h);
+  background:var(--bg2); border-bottom:1px solid var(--border); z-index:190;
+  display:flex; align-items:center; justify-content:space-between; padding:0 32px;
+}
+.page-title { font-size:15px; font-weight:600; color:var(--text); letter-spacing:0.02em; text-transform:uppercase; }
+.save-row { display:flex; align-items:center; gap:8px; }
+.btn-discard { display:none; padding:8px 18px; border-radius:2px; border:1px solid var(--border2); background:none; color:var(--muted); font-size:13px; font-weight:500; font-family:var(--sans); cursor:pointer; }
+.btn-discard.visible { display:inline-flex; }
+.btn-save { display:none; padding:8px 18px; border-radius:2px; border:none; background:var(--text); color:#fff; font-size:13px; font-weight:500; font-family:var(--sans); cursor:pointer; }
+.btn-save.visible { display:inline-flex; }
+
+/* ── Layout: sidebar + content ── */
+.layout {
+  margin-top:var(--chrome);
+  display:grid;
+  grid-template-columns:calc(var(--sidebar-w) + 16px) 1fr;
+  min-height:calc(100vh - var(--chrome));
+  align-items:start;
+  gap:0;
+}
+
+/* ── Left sidebar card ── */
+.sidebar {
+  position:sticky; top:calc(var(--chrome) + 12px); 
+  height:calc(100vh - var(--chrome) - 24px);
+  overflow-y:auto; overflow-x:hidden; scrollbar-width:thin;
+  background:var(--bg2);
+  border-radius:4px;
+  margin:12px 0 12px 16px;
+  padding:12px 0;
+  display:flex; flex-direction:column; gap:0;
+  box-sizing:border-box; width:var(--sidebar-w);
+}
+.sidebar::-webkit-scrollbar { width:4px; }
+.sidebar::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+/* Sidebar section labels */
+.sb-label {
+  font-size:9px; font-weight:600; letter-spacing:0.09em; text-transform:uppercase;
+  color:var(--faint); padding:0 16px; margin-bottom:4px; margin-top:8px;
+}
+.sb-label:first-child { margin-top:0; }
+
+/* Material buttons */
+.mat-btn {
+  display:flex; align-items:center; gap:9px; padding:7px 16px;
+  font-size:12px; font-weight:500; color:var(--muted); text-transform:uppercase;
+  background:none; border:none; cursor:pointer; font-family:var(--sans);
+  width:100%; text-align:left; transition:background 0.1s;
+}
+.mat-btn:hover { background:var(--bg3); color:var(--text); }
+.mat-btn.active { background:var(--bg3); color:var(--text); }
+.mat-badge { width:22px; height:22px; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; font-family:var(--mono); flex-shrink:0; background:var(--muted); color:#fff; }
+
+/* Sidebar divider */
+.sb-divider { height:1px; background:var(--border); margin:10px 16px; }
+/* Timeframe fields */
+.tf-wrap { padding:4px 12px; display:flex; flex-direction:column; gap:8px; }
+.tf-field { display:flex; flex-direction:column; gap:3px; }
+.tf-label { font-size:10px; color:var(--faint); letter-spacing:0.04em; }
+.tf-input {
+  width:100%; padding:5px 8px; border-radius:2px;
+  border:1px solid var(--border); background:var(--bg);
+  font-size:11px; font-family:var(--mono); color:var(--text);
+  outline:none;
+}
+.tf-input:focus { border-color:var(--text); background:var(--bg2); }
+.tf-select { width:100%; height:28px; border:1px solid var(--border); border-radius:3px; background:var(--bg); color:var(--text); font-size:12px; font-family:var(--sans); padding:0 8px; cursor:pointer; outline:none; }
+.tf-select:focus { border-color:var(--text); }
+
+/* Section nav buttons */
+.sec-btn {
+  display:flex; align-items:center; gap:8px; padding:6px 16px;
+  font-size:12px; color:var(--muted);
+  background:none; border:none; cursor:pointer; font-family:var(--sans);
+  width:100%; text-align:left; transition:background 0.1s;
+}
+.sec-btn:hover { background:var(--bg3); color:var(--text); }
+.sec-btn.active { background:var(--bg3); color:var(--text); font-weight:500; border-left:2px solid var(--text); padding-left:14px; }
+.sec-btn .material-icons { font-size:14px; opacity:0.6; flex-shrink:0; }
+.sec-btn.active .material-icons { opacity:1; }
+
+/* ── View mode select ── */
+.tf-select { width:100%; height:28px; border:1px solid var(--border); border-radius:4px; background:var(--surface); color:var(--text); font-size:12px; font-family:var(--sans); padding:0 8px; cursor:pointer; }
+.tf-select:focus { outline:none; border-color:var(--blue); }
+.tf-static { font-size:12px; font-family:var(--sans); color:var(--text); }
+
+/* ── Horizon pill buttons ── */
+.hz-btn { height:24px; padding:0 6px; border:1px solid var(--border); border-radius:3px; background:transparent; color:var(--muted); font-size:11px; font-family:var(--mono); cursor:pointer; flex:1; }
+.hz-btn.active { background:var(--blue); border-color:var(--blue); color:#fff; }
+.hz-btn:hover:not(.active) { border-color:var(--blue); color:var(--blue); }
+.tf-horizon-row { display:flex; gap:4px; width:100%; }
+
+/* ── Tables section header ── */
+.sb-section-hdr { display:flex; align-items:center; justify-content:space-between; margin:0; }
+
+/* ── Summary/Detail toggle ── */
+.view-toggle { display:flex; gap:0; border:1px solid var(--border); border-radius:4px; overflow:hidden; width:100%; }
+.vt-btn { height:22px; padding:0 8px; border:none; background:transparent; color:var(--muted); font-size:11px; font-family:var(--sans); cursor:pointer; border-right:1px solid var(--border); flex:1; }
+.vt-btn:last-child { border-right:none; }
+.vt-btn.active { background:var(--blue); color:#fff; }
+.vt-btn:hover:not(.active) { background:var(--hover); color:var(--text); }
+.chg-pill {
+  margin-left:auto; min-width:15px; height:15px; padding:0 4px;
+  border-radius:8px; background:var(--modified-bg); color:var(--modified);
+  font-size:9px; font-weight:600; font-family:var(--mono);
+  display:none; align-items:center; justify-content:center; flex-shrink:0;
+}
+.chg-pill.visible { display:inline-flex; }
+
+/* ── Error cell ── */
+td.num.err .cv { background:var(--danger-bg) !important; color:var(--danger) !important; box-shadow:inset 0 0 0 1px var(--danger) !important; border-radius:4px; }
+
+/* ── Tooltip (on data-tip cells) ── */
+td[data-tip] { position:relative; }
+td[data-tip]:hover::after {
+  content:attr(data-tip);
+  position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
+  background:var(--text); color:#fff; font-size:11px; font-family:var(--sans);
+  white-space:nowrap; padding:5px 9px; border-radius:3px; z-index:300;
+  pointer-events:none;
+}
+td[data-tip]:hover::before {
+  content:'';
+  position:absolute; bottom:calc(100% + 1px); left:50%; transform:translateX(-50%);
+  border:5px solid transparent; border-top-color:var(--text); z-index:300;
+  pointer-events:none;
+}
+
+/* ── Content area ── */
+.content { padding:24px 28px 60px; }
+
+
+/* Section */
+.section { margin-bottom:28px; scroll-margin-top:calc(var(--chrome) + 16px); }
+.section-hdr { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; cursor:pointer; user-select:none; }
+.section-hdr:hover .sec-chevron { color:var(--muted); }
+.sec-chevron { font-size:16px; color:var(--faint); font-family:'Material Icons'; font-style:normal; line-height:1; user-select:none; flex-shrink:0; transition:transform 0.15s; margin-right:0; }
+.section-title { font-size:13px; font-weight:600; color:var(--text); margin-left:0; }
+.sec-chevron + .section-title { margin-left:0; }
+
+/* Chevron–title gap handled by wrapper gap override */
+.section-hdr > div:first-child,
+.section-hdr > span:first-child { display:flex; align-items:center; gap:8px; }
+.section.collapsed .sec-chevron { transform:rotate(-90deg); }
+.section-body { }
+.section.collapsed .section-body { display:none; }
+.section-title { font-size:13px; font-weight:600; color:var(--text); }
+.score-badge { padding:2px 7px; border-radius:4px; font-size:10px; font-weight:500; font-family:var(--mono); background:var(--bg3); color:var(--muted); }
+.source-note { font-size:11px; color:var(--faint); font-family:var(--mono); display:flex; align-items:center; gap:4px; }
+.hdr-right { display:flex; align-items:center; gap:8px; }
+.sn-icon { font-size:13px; color:var(--border2); font-family:"Material Icons"; font-style:normal; line-height:1; user-select:none; vertical-align:middle; }
+
+/* Table toolbar */
+.tbar-sep { width:1px; height:16px; background:var(--border2); }
+.add-btn { display:flex; align-items:center; gap:4px; padding:5px 12px; border-radius:2px; border:1px solid var(--border); background:var(--bg2); font-size:11px; font-weight:500; color:var(--text); cursor:pointer; font-family:var(--sans); }
+.add-btn:hover { background:var(--bg3); }
+.add-btn .material-icons { font-size:14px; }
+
+/* Tables */
+.tw { overflow-x:auto; border-radius:4px; }
+table { width:100%; border-collapse:collapse; font-size:12px; }
+thead th {
+  text-align:left; padding:8px 12px;
+  font-size:9px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase;
+  color:var(--faint); background:var(--bg3);
+  border-bottom:1px solid var(--border); border-right:1px solid var(--border);
+  white-space:nowrap;
+}
+thead th:last-child { border-right:none; }
+thead tr:nth-child(2) th { padding-top:4px; padding-bottom:4px; font-size:8px; }
+thead th.grp { text-align:center; color:var(--muted); }
+tbody tr { background:var(--bg2); border-bottom:1px solid var(--fill); }
+tbody tr:last-child { border-bottom:none; }
+tbody tr:hover { background:var(--bg3); }
+tbody tr.edited td:first-child { border-left:3px solid var(--modified); }
+tbody tr.cancelled { opacity:0.5; }
+tbody tr.cancelled td { color:var(--faint); }
+tbody tr.cancelled input, tbody tr.cancelled select { color:var(--faint); pointer-events:none; }
+td { padding:9px 12px; color:var(--text); border-right:1px solid var(--border); vertical-align:middle; }
+td:last-child { border-right:none; }
+td.mono { font-family:var(--mono); font-size:11px; }
+td.muted { color:var(--muted); }
+td.warn { color:var(--warn); }
+td.ok { color:var(--ok); }
+td.danger { color:var(--danger); }
+
+/* Editable cells */
+td.num { padding:0; position:relative; cursor:text; }
+td.txt { padding:0; position:relative; cursor:text; }
+td.sel { padding:0; position:relative; cursor:pointer; }
+
+.cv { /* cell value */
+  display:block; padding:9px 12px; font-size:12px; font-family:inherit;
+  color:var(--text); outline:none; min-height:36px;
+}
+td.num .cv { padding-right:18px; font-family:var(--mono); font-size:11px; }
+td.txt .cv { padding-right:22px; }
+.cv:focus { box-shadow:inset 0 0 0 2px var(--modified); background:var(--modified-bg); color:var(--modified); border-radius:4px; }
+td.num.ce .cv, td.txt.ce .cv { background:var(--modified-bg); color:var(--modified); box-shadow:inset 0 0 0 1px var(--modified); border-radius:4px; }
+
+/* Steppers */
+.steppers {
+  position:absolute; right:3px; top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; gap:1px;
+}
+.step {
+  width:10px; height:9px; border:none; background:none; cursor:pointer; padding:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:7px; color:var(--border2); line-height:1; border-radius:1px;
+}
+tr:hover .step { color:var(--faint); }
+.step:hover { color:var(--muted) !important; background:var(--bg3); }
+
+/* Edit icon */
+.ei {
+  position:absolute; right:5px; top:50%; transform:translateY(-50%);
+  font-size:12px; color:var(--border2); pointer-events:none;
+  font-family:'Material Icons'; font-style:normal; line-height:1; user-select:none;
+}
+tr:hover .ei { color:var(--faint); }
+
+/* Date picker cell — native input, fully styled */
+td.dat { padding:0; position:relative; }
+td.dat input[type="date"] {
+  width:100%; min-height:36px; padding:9px 28px 9px 12px;
+  border:none; background:transparent; font-size:12px; font-family:var(--mono);
+  color:var(--text); outline:none; cursor:pointer;
+  appearance:none; -webkit-appearance:none;
+  position:relative; z-index:1;
+  /* Hide the native calendar icon — we supply our own */
+  color-scheme: light;
+}
+td.dat input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity:0; position:absolute; right:0; top:0; width:100%; height:100%; cursor:pointer;
+}
+td.dat input[type="date"]:focus { box-shadow:inset 0 0 0 2px var(--modified); border-radius:4px; background:var(--modified-bg); }
+td.dat input[type="date"].ce { box-shadow:inset 0 0 0 1px var(--modified); border-radius:4px; background:var(--modified-bg); color:var(--modified); }
+td.dat .cal-icon { position:absolute; right:5px; top:50%; transform:translateY(-50%); font-size:13px; color:var(--border2); pointer-events:none; font-family:'Material Icons'; font-style:normal; line-height:1; user-select:none; }
+tr:hover td.dat .cal-icon { color:var(--faint); }
+td.dat input[type="date"]:focus ~ .cal-icon { color:var(--modified); }
+
+/* Select */
+td.sel select {
+  width:100%; min-height:36px; padding:9px 26px 9px 12px;
+  border:none; background:transparent; font-size:12px; font-family:var(--sans);
+  color:var(--text); outline:none; cursor:pointer; appearance:none; -webkit-appearance:none;
+  position:relative; z-index:1;
+}
+td.sel select:focus { box-shadow:inset 0 0 0 2px var(--modified); border-radius:4px; background:var(--modified-bg); }
+td.sel select.ce { box-shadow:inset 0 0 0 1px var(--modified); border-radius:4px; background:var(--modified-bg); color:var(--modified); }
+.chev {
+  position:absolute; right:6px; top:50%; transform:translateY(-50%);
+  font-size:14px; color:var(--border2); pointer-events:none;
+  font-family:'Material Icons'; font-style:normal; line-height:1; user-select:none;
+}
+tr:hover .chev { color:var(--faint); }
+
+/* Status badges */
+.sb { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:500; white-space:nowrap; }
+.sb.ordered   { background:var(--bg3); color:var(--muted); }
+.sb.confirmed { background:var(--warn-bg); color:var(--warn); }
+.sb.received  { background:var(--ok-bg); color:var(--ok); }
+.sb.cancelled { background:var(--bg3); color:var(--faint); text-decoration:line-through; }
+.sd { width:5px; height:5px; border-radius:50%; background:currentColor; }
+
+/* Received toggle */
+.rec-toggle { display:flex; align-items:center; gap:6px; padding:9px 12px; font-size:11px; color:var(--muted); cursor:pointer; border-top:1px solid var(--border); }
+.rec-toggle:hover { background:var(--bg3); }
+.rec-toggle .material-icons { font-size:14px; }
+
+/* N/A */
+.na-msg { padding:14px 16px; background:var(--bg2); border-radius:4px; font-size:12px; color:var(--faint); font-style:italic; }
+
+/* Modal */
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:600; display:none; align-items:center; justify-content:center; }
+.overlay.open { display:flex; }
+.modal { background:var(--bg2); border-radius:4px; padding:24px; width:440px; max-width:calc(100vw - 48px); box-shadow:0 8px 32px rgba(0,0,0,0.15); }
+.modal-title { font-size:15px; font-weight:500; margin-bottom:4px; }
+.modal-sub   { font-size:12px; color:var(--muted); margin-bottom:16px; }
+.modal-diff  { background:var(--bg3); border-radius:4px; padding:12px 14px; margin-bottom:20px; font-size:11px; line-height:1.8; max-height:280px; overflow-y:auto; }
+.diff-row { display:flex; gap:8px; align-items:baseline; font-family:var(--mono); }
+.diff-lbl { color:var(--faint); min-width:160px; }
+.diff-old { color:var(--danger); text-decoration:line-through; }
+.diff-arr { color:var(--faint); }
+.diff-new { color:var(--ok); font-weight:500; }
+.modal-btns { display:flex; gap:8px; justify-content:flex-end; }
+.modal-cancel  { padding:8px 16px; border-radius:2px; border:1px solid var(--border2); background:none; font-family:var(--sans); font-size:12px; cursor:pointer; color:var(--muted); }
+.modal-confirm { padding:8px 20px; border-radius:2px; border:none; background:var(--text); color:#fff; font-family:var(--sans); font-size:12px; font-weight:500; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<!-- v2 -->
+<div class="page-header">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div class="page-title">ISAL — Data Input</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 10px;border-radius:11px;background:var(--bg3);border:1px solid var(--border);font-size:11px;color:var(--muted);font-family:var(--sans);">
+        <span style="font-weight:500;color:var(--text);">Last update</span>&nbsp;May 21, 2026
+      </span>
+      <span id="chip-today" style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 10px;border-radius:11px;background:var(--bg3);border:1px solid var(--border);font-size:11px;color:var(--muted);font-family:var(--sans);">
+        <span style="font-weight:500;color:var(--text);">Today</span>&nbsp;
+      </span>
+    </div>
+  </div>
+  <div class="save-row">
+    <button class="btn-discard" id="btn-discard" onclick="discardAll()">Discard</button>
+    <button class="btn-save"    id="btn-save"    onclick="openModal()">Save changes</button>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sb-label">Material</div>
+    <button class="mat-btn active" id="tab-anodes"   onclick="selMat('anodes')"><span class="mat-badge anodes">C</span>Anodes<span class="chg-pill" id="pill-mat-anodes"></span></button>
+    <button class="mat-btn"        id="tab-alumina"  onclick="selMat('alumina')"><span class="mat-badge alumina">Al</span>Alumina<span class="chg-pill" id="pill-mat-alumina"></span></button>
+    <button class="mat-btn"        id="tab-fluoride" onclick="selMat('fluoride')"><span class="mat-badge fluoride">F</span>Fluoride<span class="chg-pill" id="pill-mat-fluoride"></span></button>
+    <div class="sb-divider"></div>
+    <div class="sb-label">View parameters</div>
+    <div class="tf-wrap">
+      <div class="tf-field">
+        <div class="tf-label">Data</div>
+        <div style="display:flex;background:#e8e9eb;border-radius:6px;padding:3px;gap:2px;">
+          <button id="vm-plan"    onclick="setViewMode('plan')"    style="flex:1;height:24px;border:none;border-radius:4px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.12);color:#1a1a1a;font-size:11px;font-weight:500;font-family:var(--sans);cursor:pointer;">Plan</button>
+          <button id="vm-history" onclick="setViewMode('history')" style="flex:1;height:24px;border:none;border-radius:4px;background:transparent;box-shadow:none;color:#6b7280;font-size:11px;font-weight:400;font-family:var(--sans);cursor:pointer;">History</button>
+        </div>
+      </div>
+      <div class="tf-field">
+        <div class="tf-label">Table view</div>
+        <div style="display:flex;background:#e8e9eb;border-radius:6px;padding:3px;gap:2px;">
+          <button id="vt-summary" onclick="setTableView('summary')" style="flex:1;height:24px;border:none;border-radius:4px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.12);color:#1a1a1a;font-size:11px;font-weight:500;font-family:var(--sans);cursor:pointer;">Summary</button>
+          <button id="vt-detail"  onclick="setTableView('detail')"  style="flex:1;height:24px;border:none;border-radius:4px;background:transparent;box-shadow:none;color:#6b7280;font-size:11px;font-weight:400;font-family:var(--sans);cursor:pointer;">Detail</button>
+        </div>
+      </div>
+      <div class="tf-field">
+        <div class="tf-label">Horizon</div>
+        <div id="horizon-toggle" style="display:flex;background:#e8e9eb;border-radius:6px;padding:3px;gap:2px;">
+          <button onclick="setHorizon(this)" data-w="1" style="flex:1;height:24px;border:none;border-radius:4px;background:transparent;box-shadow:none;color:#6b7280;font-size:11px;font-weight:400;font-family:var(--sans);cursor:pointer;">1W</button>
+          <button onclick="setHorizon(this)" data-w="2" style="flex:1;height:24px;border:none;border-radius:4px;background:transparent;box-shadow:none;color:#6b7280;font-size:11px;font-weight:400;font-family:var(--sans);cursor:pointer;">2W</button>
+          <button onclick="setHorizon(this)" data-w="3" style="flex:1;height:24px;border:none;border-radius:4px;background:transparent;box-shadow:none;color:#6b7280;font-size:11px;font-weight:400;font-family:var(--sans);cursor:pointer;">3W</button>
+          <button onclick="setHorizon(this)" data-w="4" style="flex:1;height:24px;border:none;border-radius:4px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.12);color:#1a1a1a;font-size:11px;font-weight:500;font-family:var(--sans);cursor:pointer;">4W</button>
+        </div>
+      </div>
+    </div>
+    <div class="sb-divider"></div>
+    <div style="padding:0 12px;margin-bottom:8px;">
+      <div class="sb-label" style="margin:0;padding:0;">Tables</div>
+    </div>
+    <div id="sec-nav"></div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+  <!-- ══ ANODES ══ -->
+  <div id="mat-anodes">
+
+
+    <!-- Inventory -->
+    <div class="section" id="s-anodes-inventory">
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Inventory</span><span class="chg-pill" id="pill-hdr-anodes-inventory"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Anodes Schedule file &nbsp;<span class="sn-icon">place</span> Rotterdam + Straumsvik &nbsp;<span class="sn-icon">schedule</span> weekly</span><span class="score-badge">Score 4 · File-based</span><button class="add-btn" onclick="addStaticRow('inventory')"><span class="material-icons">add</span>New inventory</button></div></div>
+      <div class="tw"><table>
+        <thead><tr><th>Week</th><th>Date</th><th>Site</th><th>Stock (anodes)</th><th>Stock (mt)</th><th>DOS</th><th>Notes</th></tr></thead>
+        <tbody id="tbody-anodes-inventory"></tbody>
+      </table></div>
+    </div>
+
+    <!-- Consumption -->
+    <div class="section" id="s-anodes-consumption">
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Consumption</span><span class="chg-pill" id="pill-hdr-anodes-consumption"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Anodes Schedule file &nbsp;<span class="sn-icon">schedule</span> weekly</span><span class="score-badge">Score 4 · File-based</span><button class="add-btn" onclick="addStaticRow('consumption')"><span class="material-icons">add</span>New consumption</button></div></div>
+      <div class="tw"><table>
+        <thead>
+          <tr><th>Week</th><th>Date</th><th class="grp" colspan="2">Code 76</th><th class="grp" colspan="3">Code 75</th><th>Total (anodes)</th></tr>
+          <tr><th></th><th></th><th>76-reg</th><th>76-start</th><th>75-reg</th><th>75-start</th><th>75-L&amp;R</th><th></th></tr>
+        </thead>
+        <tbody id="tbody-anodes-consumption"></tbody>
+      </table></div>
+    </div>
+
+    <!-- Material arrivals -->
+    <div class="section" id="s-anodes-arrivals">
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Material arrivals</span><span class="chg-pill" id="pill-hdr-anodes-arrivals"></span></div><div style="display:flex;align-items:center;gap:8px;"><span class="source-note"><span class="sn-icon">description</span> Anodes Schedule file &nbsp;<span class="sn-icon">place</span> qty per supplier &nbsp;<span class="sn-icon">schedule</span> weekly</span><span class="score-badge">Score 4 · File-based</span><button class="add-btn" onclick="addRow()"><span class="material-icons">add</span>Add vessel</button></div></div>
+      <div class="tw"><table id="tbl-arrivals">
+        <thead>
+          <tr><th>Week</th><th>ETA ISAL</th><th>Supplier</th><th class="grp" colspan="2">Code 76</th><th class="grp" colspan="3">Code 75</th><th>Total</th><th>Status</th><th>Notes</th></tr>
+          <tr><th></th><th></th><th></th><th>76-reg</th><th>76-start</th><th>75-reg</th><th>75-start</th><th>75-L&amp;R</th><th></th><th></th><th></th></tr>
+        </thead>
+        <tbody id="tbody-arrivals"></tbody>
+      </table></div>
+      <div class="rec-toggle" onclick="toggleRec(this)">
+        <span class="material-icons">expand_more</span>
+        <span>Show 8 received deliveries</span>
+      </div>
+    </div>
+
+    <!-- Costs -->
+    <div class="section" id="s-anodes-costs">
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Costs</span><span class="chg-pill" id="pill-hdr-anodes-costs"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Anode cost file, ISAL Anode costs 2021–2026 &nbsp;<span class="sn-icon">info</span> SME input may be needed</span><span class="score-badge">Score 3 · Accessible but unstructured</span><button class="add-btn" onclick="addStaticRow('costs')"><span class="material-icons">add</span>New cost entry</button></div></div>
+      <div class="tw"><table id="tbl-costs-anodes">
+        <thead><tr><th>Supplier</th><th>Unit cost ($/anode)</th><th>Freight ($/mt)</th><th>Demurrage ($/day)</th><th>Valid from</th><th>Valid to</th><th>Notes</th></tr></thead>
+        <tbody id="tbody-costs-anodes"></tbody>
+      </table></div>
+    </div>
+
+    <!-- Ship lead times -->
+    <div class="section" id="s-anodes-leadtimes">
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Ship lead times</span><span class="chg-pill" id="pill-hdr-anodes-leadtimes"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">directions_boat</span> Vessel Schedule and Transit Times &nbsp;<span class="sn-icon">schedule</span> 2023–2026</span><span class="score-badge">Score 4 · File-based</span><button class="add-btn" onclick="addStaticRow('leadtimes')"><span class="material-icons">add</span>New lead time</button></div></div>
+      <div class="tw"><table>
+        <thead><tr><th>Supplier</th><th>Origin port</th><th>Avg lead time</th><th>Min</th><th>Max</th><th>σ</th><th>Shipments</th></tr></thead>
+        <tbody>
+          <tr><td>Wanfang</td><td class="muted">Shanghai</td><td class="mono">82d</td><td class="mono">64d</td><td class="mono">119d</td><td class="mono">18d</td><td class="mono muted">34</td></tr>
+          <tr><td>Sunstone</td><td class="muted">Tianjin</td><td class="mono">79d</td><td class="mono">61d</td><td class="mono">108d</td><td class="mono">14d</td><td class="mono muted">28</td></tr>
+          <tr><td>MZAS</td><td class="muted">Xingang</td><td class="mono">85d</td><td class="mono">68d</td><td class="mono">124d</td><td class="mono">16d</td><td class="mono muted">19</td></tr>
+          <tr><td>Aluchemie</td><td class="muted">Rotterdam</td><td class="mono">12d</td><td class="mono">9d</td><td class="mono">18d</td><td class="mono">3d</td><td class="mono muted">22</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- Material transfers -->
+    <div class="section" id="s-anodes-transfers">
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Material transfers</span><span class="chg-pill" id="pill-hdr-anodes-transfers"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Charter data analysis &nbsp;<span class="sn-icon">schedule</span> since Nov 2023</span><span class="score-badge">Score 4 · File-based</span><button class="add-btn" onclick="addStaticRow('transfers')"><span class="material-icons">add</span>New transfer</button></div></div>
+      <div class="tw"><table>
+        <thead><tr><th>Charter date</th><th>From</th><th>To</th><th>Qty (anodes)</th><th>Qty (mt)</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">May 15, 2026</td><td>Rotterdam</td><td>Straumsvik</td><td class="mono">4,200</td><td class="mono">69.3t</td><td></td></tr>
+          <tr><td class="mono">May 1, 2026</td><td>Rotterdam</td><td>Straumsvik</td><td class="mono">3,800</td><td class="mono">62.7t</td><td></td></tr>
+          <tr><td class="mono">Apr 17, 2026</td><td>Straumsvik</td><td>Rotterdam</td><td class="mono">—</td><td class="mono">18.4t</td><td class="muted">Anode butts return</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- Constraints -->
+    <div class="section" id="s-anodes-constraints">
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Constraints</span><span class="chg-pill" id="pill-hdr-anodes-constraints"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Charter capacity — source not confirmed (ask Sarah)</span><span class="score-badge">Score 2 · Source identified</span><button class="add-btn" onclick="addStaticRow('constraints')"><span class="material-icons">add</span>New constraint</button></div></div>
+      <div class="tw"><table>
+        <thead><tr><th>Constraint</th><th>Type</th><th>Value</th><th>Unit</th><th>Source</th><th>Confidence</th></tr></thead>
+        <tbody>
+          <tr><td>Charter capacity</td><td>Max</td><td class="mono warn">TBC</td><td>mt/charter</td><td class="muted warn">Unknown — ask Sarah</td><td><span class="sb" style="background:var(--danger-bg);color:var(--danger);">Unconfirmed</span></td></tr>
+          <tr><td>Storage — Straumsvik</td><td>Max</td><td class="mono">~25,000</td><td>anodes</td><td class="muted">Estimated</td><td><span class="sb" style="background:var(--warn-bg);color:var(--warn);">Estimated</span></td></tr>
+          <tr><td>Storage — Rotterdam</td><td>Max</td><td class="mono">~12,000</td><td>anodes</td><td class="muted">Estimated</td><td><span class="sb" style="background:var(--warn-bg);color:var(--warn);">Estimated</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+  </div><!-- /anodes -->
+
+  <!-- ══ ALUMINA ══ -->
+  <div id="mat-alumina" style="display:none;">
+    <div class="section" id="s-alumina-inventory">
+      <div class="section-hdr"><span class="section-title">Inventory</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> AluminaCommunication file &nbsp;<span class="sn-icon">schedule</span> daily &nbsp;<span class="sn-icon">place</span> per silo A&amp;C</span><span class="score-badge">Score 4 · File-based</span></div></div>
+      <div class="tw"><table><thead><tr><th>Date</th><th>Silo</th><th>Stock (mt)</th><th>DOS</th><th>Notes</th></tr></thead><tbody>
+        <tr><td class="mono">May 21</td><td>Silo A</td><td class="mono">21,400</td><td class="mono">19d</td><td></td></tr>
+        <tr><td class="mono">May 21</td><td>Silo C</td><td class="mono">20,200</td><td class="mono">18d</td><td></td></tr>
+        <tr><td class="mono">May 20</td><td>Silo A</td><td class="mono">22,100</td><td class="mono">20d</td><td></td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="section" id="s-alumina-consumption">
+      <div class="section-hdr"><span class="section-title">Consumption</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> AluminaCommunication file &nbsp;<span class="sn-icon">schedule</span> daily &nbsp;<span class="sn-icon">place</span> per silo</span><span class="score-badge">Score 4 · File-based</span></div></div>
+      <div class="tw"><table><thead><tr><th>Date</th><th>Silo</th><th>Consumption (mt)</th><th>Notes</th></tr></thead><tbody>
+        <tr><td class="mono">May 21</td><td>Silo A</td><td class="mono">580</td><td></td></tr>
+        <tr><td class="mono">May 21</td><td>Silo C</td><td class="mono">520</td><td></td></tr>
+        <tr><td class="mono">May 20</td><td>Silo A</td><td class="mono">575</td><td></td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="section" id="s-alumina-arrivals">
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:24px;"><span class="section-title">Material arrivals</span><button class="add-btn" ><span class="material-icons">add</span>Add vessel</button></div><div style="display:flex;align-items:center;gap:8px;"><span class="source-note"><span class="sn-icon">description</span> AluminaCommunication file &nbsp;<span class="sn-icon">schedule</span> daily &nbsp;<span class="sn-icon">place</span> single supplier</span><span class="score-badge">Score 4 · File-based</span></div></div>
+      <div class="tw"><table><thead><tr><th>ETA ISAL</th><th>Supplier</th><th>Qty (mt)</th><th>Status</th><th>Notes</th></tr></thead><tbody>
+        <tr><td class="mono">Jun 3</td><td>Alunorte</td><td class="mono">35,000</td><td><span class="sb confirmed"><span class="sd"></span>Confirmed</span></td><td></td></tr>
+        <tr><td class="mono">Jun 24</td><td>Alunorte</td><td class="mono">37,000</td><td><span class="sb ordered"><span class="sd"></span>Ordered</span></td><td></td></tr>
+        <tr><td class="mono">Jul 15</td><td>Alunorte</td><td class="mono">36,000</td><td><span class="sb ordered"><span class="sd"></span>Ordered</span></td><td></td></tr>
+      </tbody></table></div>
+      <div class="rec-toggle" onclick="toggleRec(this)"><span class="material-icons">expand_more</span><span>Show 4 received deliveries</span></div>
+    </div>
+    <div class="section" id="s-alumina-costs">
+      <div class="section-hdr"><span class="section-title">Costs</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> RM cost ISAL &nbsp;<span class="sn-icon">info</span> SME input may be needed</span><span class="score-badge">Score 3 · Accessible but unstructured</span></div></div>
+      <div class="tw"><table><thead><tr><th>Supplier</th><th>Unit cost ($/mt)</th><th>Freight ($/mt)</th><th>Demurrage ($/day)</th><th>Valid from</th><th>Notes</th></tr></thead><tbody>
+        <tr><td>Alunorte</td><td class="mono">$380</td><td class="mono">$28</td><td class="mono muted">—</td><td class="mono">Jan 2026</td><td class="muted">SME to confirm demurrage</td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="section" id="s-alumina-leadtimes">
+      <div class="section-hdr"><span class="section-title">Ship lead times</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">directions_boat</span> ALUMINA SHIPMENTS spreadsheet &nbsp;<span class="sn-icon">schedule</span> 2024–2025</span><span class="score-badge">Score 4 · File-based</span></div></div>
+      <div class="tw"><table><thead><tr><th>Supplier</th><th>Origin</th><th>Avg lead time</th><th>Unloading time</th><th>Min</th><th>Max</th><th>Shipments</th></tr></thead><tbody>
+        <tr><td>Alunorte</td><td class="muted">Barcarena, Brazil</td><td class="mono">17d</td><td class="mono">2d</td><td class="mono">14d</td><td class="mono">22d</td><td class="mono muted">18</td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="section" id="s-alumina-transfers">
+      <div class="section-hdr"><span class="section-title">Material transfers</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">place</span> Alumina arrives directly at Straumsvik — no transfers</span><span class="score-badge">N/A</span></div></div>
+      <div class="na-msg">Not applicable — Alumina is shipped directly from Brazil to Straumsvik.</div>
+    </div>
+    <div class="section" id="s-alumina-constraints">
+      <div class="section-hdr"><span class="section-title">Constraints</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Illustrated diagrams and local files &nbsp;<span class="sn-icon">place</span> storage capacity</span><span class="score-badge">Score 4 · File-based</span></div></div>
+      <div class="tw"><table><thead><tr><th>Constraint</th><th>Type</th><th>Value</th><th>Unit</th><th>Source</th></tr></thead><tbody>
+        <tr><td>Silo A capacity</td><td>Max</td><td class="mono">31,250</td><td>mt</td><td class="muted">Illustrated diagram</td></tr>
+        <tr><td>Silo C capacity</td><td>Max</td><td class="mono">31,250</td><td>mt</td><td class="muted">Illustrated diagram</td></tr>
+        <tr><td>Total silo capacity</td><td>Max</td><td class="mono">62,500</td><td>mt</td><td class="muted">Derived</td></tr>
+      </tbody></table></div>
+    </div>
+  </div><!-- /alumina -->
+
+  <!-- ══ FLUORIDE ══ -->
+  <div id="mat-fluoride" style="display:none;">
+    <div class="section" id="s-fluoride-inventory"><div class="section-hdr"><span class="section-title">Inventory</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span></div></div><div class="tw"><table><thead><tr><th>Date</th><th>Site</th><th>Stock (mt)</th><th>DOS</th><th>Notes</th></tr></thead><tbody><tr><td class="mono">May 21</td><td>Straumsvik</td><td class="mono">572</td><td class="mono">52d</td><td></td></tr><tr><td class="mono">May 20</td><td>Straumsvik</td><td class="mono">583</td><td class="mono">53d</td><td></td></tr></tbody></table></div></div>
+    <div class="section" id="s-fluoride-consumption"><div class="section-hdr"><span class="section-title">Consumption</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span></div></div><div class="tw"><table><thead><tr><th>Date</th><th>Consumption (mt)</th><th>Notes</th></tr></thead><tbody><tr><td class="mono">May 21</td><td class="mono">11.2</td><td class="muted">Slightly above avg</td></tr><tr><td class="mono">May 20</td><td class="mono">10.8</td><td></td></tr></tbody></table></div></div>
+    <div class="section" id="s-fluoride-arrivals">
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:24px;"><span class="section-title">Material arrivals</span><button class="add-btn" ><span class="material-icons">add</span>Add vessel</button></div><div style="display:flex;align-items:center;gap:8px;"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span></div></div>
+      <div class="tw"><table><thead><tr><th>ETA ISAL</th><th>Supplier</th><th>Qty (mt)</th><th>Status</th><th>Notes</th></tr></thead><tbody>
+        <tr><td class="mono">Jun 10</td><td>Alufluor</td><td class="mono">200</td><td><span class="sb confirmed"><span class="sd"></span>Confirmed</span></td><td></td></tr>
+        <tr><td class="mono">Jun 28</td><td>Elixir</td><td class="mono">180</td><td><span class="sb ordered"><span class="sd"></span>Ordered</span></td><td class="muted">± 14d variability</td></tr>
+      </tbody></table></div>
+      <div class="rec-toggle" onclick="toggleRec(this)"><span class="material-icons">expand_more</span><span>Show 5 received deliveries</span></div>
+    </div>
+    <div class="section" id="s-fluoride-costs"><div class="section-hdr"><span class="section-title">Costs</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span></div></div><div class="tw"><table><thead><tr><th>Supplier</th><th>Unit cost ($/mt)</th><th>Freight ($/mt)</th><th>Valid from</th><th>Notes</th></tr></thead><tbody><tr><td>Alufluor</td><td class="mono muted">—</td><td class="mono muted">—</td><td class="mono">Jan 2026</td><td class="muted">SME input needed</td></tr><tr><td>Elixir</td><td class="mono muted">—</td><td class="mono muted">—</td><td class="mono">Jan 2026</td><td class="muted">SME input needed</td></tr></tbody></table></div></div>
+    <div class="section" id="s-fluoride-leadtimes"><div class="section-hdr"><span class="section-title">Ship lead times</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span></div></div><div class="tw"><table><thead><tr><th>Supplier</th><th>Origin</th><th>Avg lead time</th><th>Min</th><th>Max</th><th>Notes</th></tr></thead><tbody><tr><td>Alufluor</td><td class="muted">Sweden</td><td class="mono">21d</td><td class="mono">18d</td><td class="mono">26d</td><td></td></tr><tr><td>Elixir</td><td class="muted">Serbia</td><td class="mono">42d</td><td class="mono">28d</td><td class="mono">70d</td><td class="muted warn">High variability</td></tr></tbody></table></div></div>
+    <div class="section" id="s-fluoride-transfers"><div class="section-hdr"><span class="section-title">Material transfers</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span></div></div><div class="tw"><table><thead><tr><th>Charter date</th><th>From</th><th>To</th><th>Qty (mt)</th><th>Notes</th></tr></thead><tbody><tr><td class="mono">May 15, 2026</td><td>Rotterdam</td><td>Straumsvik</td><td class="mono">48</td><td></td></tr></tbody></table></div></div>
+    <div class="section" id="s-fluoride-constraints"><div class="section-hdr"><span class="section-title">Constraints</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span></div></div><div class="tw"><table><thead><tr><th>Constraint</th><th>Type</th><th>Value</th><th>Unit</th><th>Notes</th></tr></thead><tbody><tr><td>Storage — Straumsvik</td><td>Max</td><td class="mono warn">TBC</td><td>mt</td><td class="muted">Source to be confirmed</td></tr></tbody></table></div></div>
+  </div><!-- /fluoride -->
+
+</div><!-- /content -->
+</div><!-- /layout -->
+
+<!-- Modal -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title">Save changes?</div>
+    <div class="modal-sub">Parameter changes affect the simulation engine. Schedule changes are reflected in future simulations.</div>
+    <div class="modal-diff" id="modal-diff"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel"  onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmSave()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────
+var _mat = 'anodes';
+var _schedule = {};
+var _today = new Date('2026-05-21'); // prototype's "today"
+var _colLabels = { eta:'ETA ISAL', supplier:'Supplier', r76:'76-reg', s76:'76-start', r75:'75-reg', s75:'75-start', lr75:'75-L&R', qty:'Quantity', status:'Status', notes:'Notes' };
+
+// ── Section config ────────────────────────────────────────────────────
+var _secs = {
+  anodes:   [['inventory','Inventory'],['consumption','Consumption'],['arrivals','Material arrivals'],['costs','Costs'],['leadtimes','Ship lead times'],['transfers','Material transfers'],['constraints','Constraints']],
+  alumina:  [['inventory','Inventory'],['consumption','Consumption'],['arrivals','Material arrivals'],['costs','Costs'],['leadtimes','Ship lead times'],['constraints','Constraints']],
+  fluoride: [['inventory','Inventory'],['consumption','Consumption'],['arrivals','Material arrivals'],['costs','Costs'],['leadtimes','Ship lead times'],['transfers','Material transfers'],['constraints','Constraints']],
+};
+
+// ── Arrivals data (anodes) — generated every 3 days ──────────────────
+var _rows = (function() {
+  var suppliers = ['Sunstone','Wanfang','MZAS','Aluchemie'];
+  var statuses  = ['confirmed','confirmed','ordered','ordered','ordered'];
+  var rows = [];
+  var base = new Date('2026-05-21');
+  var id = 1;
+  for (var i = 0; i < 60; i++) { // 60 × 3 days = ~6 months
+    var d = new Date(base);
+    d.setDate(d.getDate() + i * 3);
+    var iso = d.toISOString().slice(0, 10);
+    var mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+    var label = mon + ' ' + d.getDate();
+    var week = 'W' + Math.ceil((d - new Date(d.getFullYear(), 0, 1)) / 604800000);
+    var sup = suppliers[id % suppliers.length];
+    var sta = statuses[i % statuses.length];
+    var r76 = 1800 + (id % 4) * 200;
+    var s76 = (id % 3 === 0) ? 200 : 0;
+    var r75 = 1200 + (id % 5) * 150;
+    var s75 = (id % 4 === 0) ? 100 : 0;
+    var lr75 = (id % 6 === 0) ? 200 : 0;
+    rows.push({ id:id, week:week, eta:iso, etaLabel:label, supplier:sup, r76:r76, s76:s76, r75:r75, s75:s75, lr75:lr75, status:sta, notes:'' });
+    id++;
+  }
+  return rows;
+})();
+
+// ── Inventory data (anodes, weekly) ───────────────────────────────────
+var _inventory = [
+  { date:'2026-05-19', dateLabel:'May 19', week:'W21', site:'Straumsvik', stock:8400, mt:'138.6t', dos:'24d', dosClass:'warn', notes:'' },
+  { date:'2026-05-19', dateLabel:'May 19', week:'W21', site:'Rotterdam',  stock:3200, mt:'52.8t',  dos:'—',   dosClass:'', notes:'' },
+  { date:'2026-05-12', dateLabel:'May 12', week:'W20', site:'Straumsvik', stock:9100, mt:'150.2t', dos:'26d', dosClass:'', notes:'' },
+  { date:'2026-05-12', dateLabel:'May 12', week:'W20', site:'Rotterdam',  stock:3800, mt:'62.7t',  dos:'—',   dosClass:'', notes:'' },
+  { date:'2026-05-05', dateLabel:'May 5',  week:'W19', site:'Straumsvik', stock:9800, mt:'161.7t', dos:'28d', dosClass:'', notes:'' },
+  { date:'2026-05-05', dateLabel:'May 5',  week:'W19', site:'Rotterdam',  stock:4100, mt:'67.7t',  dos:'—',   dosClass:'', notes:'' },
+  { date:'2026-04-28', dateLabel:'Apr 28', week:'W18', site:'Straumsvik', stock:8600, mt:'141.9t', dos:'25d', dosClass:'', notes:'' },
+  { date:'2026-04-28', dateLabel:'Apr 28', week:'W18', site:'Rotterdam',  stock:3900, mt:'64.4t',  dos:'—',   dosClass:'', notes:'' },
+  { date:'2026-04-21', dateLabel:'Apr 21', week:'W17', site:'Straumsvik', stock:7800, mt:'128.7t', dos:'22d', dosClass:'warn', notes:'' },
+  { date:'2026-04-21', dateLabel:'Apr 21', week:'W17', site:'Rotterdam',  stock:3600, mt:'59.4t',  dos:'—',   dosClass:'', notes:'' },
+];
+
+// ── Consumption data (anodes, weekly) ─────────────────────────────────
+var _consumption = [
+  { date:'2026-05-19', dateLabel:'May 19', week:'W21', r76:255, s76:0,  r75:128, s75:0,  lr75:0 },
+  { date:'2026-05-12', dateLabel:'May 12', week:'W20', r76:255, s76:30, r75:128, s75:20, lr75:0 },
+  { date:'2026-05-05', dateLabel:'May 5',  week:'W19', r76:255, s76:0,  r75:128, s75:0,  lr75:0 },
+  { date:'2026-04-28', dateLabel:'Apr 28', week:'W18', r76:255, s76:0,  r75:128, s75:0,  lr75:0 },
+  { date:'2026-04-21', dateLabel:'Apr 21', week:'W17', r76:255, s76:20, r75:128, s75:15, lr75:0 },
+  { date:'2026-04-14', dateLabel:'Apr 14', week:'W16', r76:255, s76:0,  r75:128, s75:0,  lr75:0 },
+  { date:'2026-04-07', dateLabel:'Apr 7',  week:'W15', r76:255, s76:0,  r75:128, s75:0,  lr75:0 },
+  { date:'2026-03-31', dateLabel:'Mar 31', week:'W14', r76:255, s76:30, r75:128, s75:20, lr75:15 },
+  { date:'2026-03-24', dateLabel:'Mar 24', week:'W13', r76:255, s76:0,  r75:128, s75:0,  lr75:0 },
+];
+
+// ── Timeframe filter ──────────────────────────────────────────────────
+function parseDate(str) {
+  if (!str || str.indexOf('-') === -1) return new Date(_today);
+  var p = str.split('-');
+  return new Date(+p[0], +p[1]-1, +p[2]);
+}
+function getTimeframe() {
+  var horizon = _tableView === 'detail' ? 8 : 4;
+  var container = document.getElementById('horizon-toggle');
+  if (container) {
+    var active = Array.prototype.find.call(container.querySelectorAll('button'), function(b) {
+      return b.style.background === 'rgb(255, 255, 255)' || b.style.background === '#fff';
+    });
+    if (active) horizon = parseInt(active.dataset.w, 10);
+  }
+  var start = parseDate('2026-05-21');
+  var end = new Date(start);
+  end.setDate(end.getDate() + horizon * 7);
+  return { start: start, end: end, horizonWeeks: horizon };
+}
+function inWindow(dateStr) {
+  var d = parseDate(dateStr);
+  var tf = getTimeframe();
+  return d >= tf.start && d <= tf.end;
+}
+function inWindowBack(dateStr) {
+  // For historical data: from (start - horizon) to start
+  var d = parseDate(dateStr);
+  var tf = getTimeframe();
+  var lookback = new Date(tf.start);
+  lookback.setDate(lookback.getDate() - (tf.horizonWeeks * 7));
+  return d >= lookback && d <= tf.start;
+}
+function applyTimeframe() { renderArrivals(); renderInventory(); renderConsumption(); }
+
+// ── View mode (Plan / Historical) ─────────────────────────────────────
+function setViewMode(mode) {
+  var plan = document.getElementById('vm-plan');
+  var hist = document.getElementById('vm-history');
+  if (plan && hist) {
+    plan.style.background = mode === 'plan'    ? '#fff' : 'transparent';
+    plan.style.boxShadow  = mode === 'plan'    ? '0 1px 3px rgba(0,0,0,0.12)' : 'none';
+    plan.style.color      = mode === 'plan'    ? '#1a1a1a' : '#6b7280';
+    plan.style.fontWeight = mode === 'plan'    ? '500' : '400';
+    hist.style.background = mode === 'history' ? '#fff' : 'transparent';
+    hist.style.boxShadow  = mode === 'history' ? '0 1px 3px rgba(0,0,0,0.12)' : 'none';
+    hist.style.color      = mode === 'history' ? '#1a1a1a' : '#6b7280';
+    hist.style.fontWeight = mode === 'history' ? '500' : '400';
+  }
+  applyTimeframe();
+}
+function applyViewMode() { /* replaced by setViewMode */ }
+
+// ── Horizon pill buttons ──────────────────────────────────────────────
+function setHorizon(btn) {
+  var container = document.getElementById('horizon-toggle');
+  if (!container) return;
+  container.querySelectorAll('button').forEach(function(b) {
+    b.style.background = 'transparent';
+    b.style.boxShadow  = 'none';
+    b.style.color      = '#6b7280';
+    b.style.fontWeight = '400';
+  });
+  btn.style.background = '#fff';
+  btn.style.boxShadow  = '0 1px 3px rgba(0,0,0,0.12)';
+  btn.style.color      = '#1a1a1a';
+  btn.style.fontWeight = '500';
+  applyTimeframe();
+}
+
+// ── Summary / Detail view ─────────────────────────────────────────────
+var _tableView = 'summary';
+function setTableView(mode) {
+  _tableView = mode;
+  var sum = document.getElementById('vt-summary');
+  var det = document.getElementById('vt-detail');
+  if (sum && det) {
+    sum.style.background  = mode === 'summary' ? '#fff' : 'transparent';
+    sum.style.boxShadow   = mode === 'summary' ? '0 1px 3px rgba(0,0,0,0.12)' : 'none';
+    sum.style.color       = mode === 'summary' ? '#1a1a1a' : '#6b7280';
+    sum.style.fontWeight  = mode === 'summary' ? '500' : '400';
+    det.style.background  = mode === 'detail'  ? '#fff' : 'transparent';
+    det.style.boxShadow   = mode === 'detail'  ? '0 1px 3px rgba(0,0,0,0.12)' : 'none';
+    det.style.color       = mode === 'detail'  ? '#1a1a1a' : '#6b7280';
+    det.style.fontWeight  = mode === 'detail'  ? '500' : '400';
+  }
+
+  var hz = document.getElementById('horizon-toggle');
+  if (!hz) return;
+  var options = mode === 'detail' ? [2,4,6,8] : [1,2,3,4];
+  var defaultW = mode === 'detail' ? 8 : 4;
+  hz.innerHTML = '';
+  options.forEach(function(w) {
+    var btn = document.createElement('button');
+    btn.setAttribute('data-w', w);
+    btn.textContent = w + 'W';
+    btn.onclick = function(){ setHorizon(btn); };
+    var isActive = w === defaultW;
+    btn.style.cssText = 'flex:1;height:24px;border:none;border-radius:4px;font-size:11px;font-family:var(--sans);cursor:pointer;'
+      + (isActive ? 'background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.12);color:#1a1a1a;font-weight:500;'
+                  : 'background:transparent;box-shadow:none;color:#6b7280;font-weight:400;');
+    hz.appendChild(btn);
+  });
+  applyTimeframe();
+
+  var matEl = document.getElementById('mat-' + _mat);
+  if (!matEl) return;
+
+  if (mode === 'summary') {
+    // Show all sections
+    matEl.querySelectorAll('.section').forEach(function(s){ s.style.display = ''; });
+    // Restore sec-nav as anchor links
+    document.querySelectorAll('#sec-nav .sec-btn').forEach(function(btn) {
+      btn.onclick = function() {
+        var sec = document.getElementById('s-' + btn.dataset.mat + '-' + btn.dataset.sec);
+        if (sec) sec.scrollIntoView({ behavior:'smooth' });
+        document.querySelectorAll('#sec-nav .sec-btn').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+      };
+    });
+    // Reveal all, show first
+    var first = document.querySelector('#sec-nav .sec-btn');
+    if (first) { first.classList.add('active'); var target = document.getElementById('s-'+_mat+'-'+first.dataset.sec); if(target) target.scrollIntoView(); }
+  } else {
+    // Show only first section by default
+    var firstSec = _secs[_mat][0];
+    showDetailSection(firstSec ? firstSec[0] : null);
+    // Wire sec-nav buttons to switch detail section
+    document.querySelectorAll('#sec-nav .sec-btn').forEach(function(btn) {
+      btn.onclick = function() {
+        document.querySelectorAll('#sec-nav .sec-btn').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        showDetailSection(btn.dataset.sec);
+      };
+    });
+    // Activate first
+    var firstBtn = document.querySelector('#sec-nav .sec-btn');
+    if (firstBtn) firstBtn.classList.add('active');
+  }
+}
+
+function showDetailSection(secKey) {
+  var matEl = document.getElementById('mat-' + _mat);
+  if (!matEl) return;
+  matEl.querySelectorAll('.section').forEach(function(s){
+    var id = s.id; // e.g. s-anodes-arrivals
+    var key = id.replace('s-' + _mat + '-', '');
+    s.style.display = (key === secKey) ? '' : 'none';
+  });
+}
+
+// ── Add row (static HTML tables) ─────────────────────────────────────
+var _addRowLabels = {
+  inventory:   'New inventory entry',
+  consumption: 'New consumption entry',
+  arrivals:    'New vessel',
+  costs:       'New cost entry',
+  leadtimes:   'New lead time',
+  transfers:   'New transfer',
+  constraints: 'New constraint'
+};
+
+function addStaticRow(secKey) {
+  var sec = document.getElementById('s-' + _mat + '-' + secKey);
+  if (!sec) return;
+  var tbody = sec.querySelector('tbody');
+  if (!tbody) return;
+  var cols = tbody.closest('table').querySelector('thead tr').cells.length;
+  var tr = document.createElement('tr');
+  tr.classList.add('edited');
+  for (var i = 0; i < cols; i++) {
+    var td = document.createElement('td');
+    td.contentEditable = 'true';
+    td.style.cssText = 'background:var(--modified-bg);outline:none;';
+    td.setAttribute('spellcheck','false');
+    tr.appendChild(td);
+  }
+  // Insert at top (after any existing first row)
+  tbody.insertBefore(tr, tbody.firstChild);
+  tr.cells[0].focus();
+}
+
+// ── Inventory table ───────────────────────────────────────────────────
+function renderInventory() {
+  var tb = document.getElementById('tbody-anodes-inventory');
+  if (!tb) return;
+  var rows = _inventory.filter(function(r){ return inWindowBack(r.date); });
+  tb.innerHTML = '';
+  if (!rows.length) {
+    tb.innerHTML = '<tr><td colspan="7" style="color:var(--faint);text-align:center;padding:16px;">No data in this timeframe</td></tr>';
+    return;
+  }
+  rows.forEach(function(r) {
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td class="mono">'+r.week+'</td><td class="mono">'+r.dateLabel+'</td><td>'+r.site+'</td><td class="mono">'+r.stock.toLocaleString()+'</td><td class="mono">'+r.mt+'</td><td class="mono'+(r.dosClass?' '+r.dosClass:'')+'">'+r.dos+'</td><td></td>';
+    tb.appendChild(tr);
+  });
+}
+
+// ── Consumption table ─────────────────────────────────────────────────
+function renderConsumption() {
+  var tb = document.getElementById('tbody-anodes-consumption');
+  if (!tb) return;
+  var rows = _consumption.filter(function(r){ return inWindowBack(r.date); });
+  tb.innerHTML = '';
+  if (!rows.length) {
+    tb.innerHTML = '<tr><td colspan="8" style="color:var(--faint);text-align:center;padding:16px;">No data in this timeframe</td></tr>';
+    return;
+  }
+  rows.forEach(function(r) {
+    var total = r.r76+r.s76+r.r75+r.s75+r.lr75;
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td class="mono">'+r.week+'</td><td class="mono">'+r.dateLabel+'</td><td class="mono">'+r.r76+'</td><td class="mono">'+r.s76+'</td><td class="mono">'+r.r75+'</td><td class="mono">'+r.s75+'</td><td class="mono">'+r.lr75+'</td><td class="mono">'+total+'</td>';
+    tb.appendChild(tr);
+  });
+}
+var _costs = [
+  { supplier:'Wanfang',   unit:'$148', freight:'$42', demurrage:'—', from:'Jan 2026', to:'Dec 2026', notes:'' },
+  { supplier:'Sunstone',  unit:'$152', freight:'$44', demurrage:'—', from:'Jan 2026', to:'Dec 2026', notes:'' },
+  { supplier:'MZAS',      unit:'$145', freight:'—',   demurrage:'—', from:'Jan 2026', to:'Dec 2026', notes:'Incomplete — ask SME' },
+  { supplier:'Aluchemie', unit:'$156', freight:'$46', demurrage:'—', from:'Jan 2026', to:'Dec 2026', notes:'' },
+];
+
+// ── Sidebar section icons ──────────────────────────────────────────────
+var _secIcons = {
+  inventory:'inventory_2', consumption:'local_fire_department',
+  arrivals:'directions_boat', costs:'payments',
+  leadtimes:'schedule', transfers:'swap_horiz', constraints:'lock'
+};
+
+// ── Material selection ────────────────────────────────────────────────
+function selMat(mat) {
+  _mat = mat;
+  ['anodes','alumina','fluoride'].forEach(function(m) {
+    document.getElementById('tab-' + m).classList.toggle('active', m === mat);
+    document.getElementById('mat-' + m).style.display = m === mat ? 'block' : 'none';
+  });
+  buildSecNav(mat);
+  renderArrivals();
+  renderInventory();
+  renderConsumption();
+  renderCosts();
+  setTimeout(wireCosts, 0);
+  updateChangeCounts();
+}
+
+// ── Sidebar section nav ───────────────────────────────────────────────
+function buildSecNav(mat) {
+  var el = document.getElementById('sec-nav');
+  el.innerHTML = '';
+  _secs[mat].forEach(function(s) {
+    if (!document.getElementById('s-' + mat + '-' + s[0])) return;
+    var btn = document.createElement('button');
+    btn.className = 'sec-btn';
+    btn.dataset.sec = s[0];
+    btn.dataset.mat = mat;
+    btn.innerHTML = '<span class="material-icons">' + (_secIcons[s[0]] || 'circle') + '</span>' + s[1] + '<span class="chg-pill" id="pill-sec-'+mat+'-'+s[0]+'"></span>';
+    btn.onclick = function() {
+      var sec = document.getElementById('s-' + mat + '-' + s[0]);
+      if (sec) sec.scrollIntoView({ behavior:'smooth' });
+      el.querySelectorAll('.sec-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+    };
+    el.appendChild(btn);
+  });
+  var first = el.querySelector('.sec-btn');
+  if (first) first.classList.add('active');
+}
+
+// ── Model params ──────────────────────────────────────────────────────
+
+
+
+// ── Arrivals table ────────────────────────────────────────────────────
+function renderArrivals() {
+  var tb = document.getElementById('tbody-arrivals');
+  if (!tb) return;
+  var rows = _rows.filter(function(r){ return r.isNew || inWindow(r.eta); });
+  tb.innerHTML = '';
+  if (!rows.length) {
+    tb.innerHTML = '<tr><td colspan="11" style="color:var(--faint);text-align:center;padding:16px;">No arrivals in this timeframe</td></tr>';
+    return;
+  }
+  rows.forEach(function(row) {
+    var tr = document.createElement('tr');
+    if (row.received) tr.classList.add('received');
+    var tot = (row.r76||0)+(row.s76||0)+(row.r75||0)+(row.s75||0)+(row.lr75||0);
+    var rec = !!row.received;
+    var sOpts = ['ordered','confirmed','cancelled'].map(function(s){
+      return '<option value="'+s+'"'+(row.status===s?' selected':'')+'>'+(s==='ordered'?'Ordered':s==='confirmed'?'Confirmed':'Cancelled')+'</option>';
+    }).join('');
+    var supOpts = ['Wanfang','Sunstone','MZAS','Aluchemie'].map(function(s){
+      return '<option'+(row.supplier===s?' selected':'')+'>'+s+'</option>';
+    }).join('');
+
+    tr.innerHTML =
+      '<td class="mono">'+(row.week||'—')+'</td>'+
+      mkDat(row.eta, row.etaLabel||row.eta, row.id,'eta', rec)+
+      mkSel(row.supplier, row.id,'supplier',supOpts,rec)+
+      mkNum(row.r76,   row.id,'r76',  rec, 5000)+
+      mkNum(row.s76,   row.id,'s76',  rec, 5000)+
+      mkNum(row.r75,   row.id,'r75',  rec, 5000)+
+      mkNum(row.s75,   row.id,'s75',  rec, 5000)+
+      mkNum(row.lr75,  row.id,'lr75', rec, 5000)+
+      '<td class="mono">'+tot.toLocaleString()+'</td>'+
+      (rec ? '<td><span class="sb received"><span class="sd"></span>Received</span></td>' : mkSel(row.status, row.id,'status',sOpts,false))+
+      mkTxt(row.notes||'', row.id,'notes', rec);
+
+    tb.appendChild(tr);
+    if (row.isNew) tr.classList.add('edited');
+  });
+  tb.querySelectorAll('td.num .cv, td.txt .cv').forEach(wireCV);
+}
+
+function mkNum(val, id, field, rec, max) {
+  if (rec) return '<td class="mono">'+val+'</td>';
+  var maxAttr = (max !== undefined) ? ' data-max="'+max+'"' : '';
+  return '<td class="num mono" data-id="'+id+'" data-field="'+field+'" data-orig="'+val+'"'+maxAttr+'>'
+    +'<div class="steppers"><button class="step" onclick="step(this,1)" tabindex="-1">▲</button><button class="step" onclick="step(this,-1)" tabindex="-1">▼</button></div>'
+    +'<span class="cv" contenteditable="true" spellcheck="false">'+val+'</span>'
+    +'</td>';
+}
+
+function mkTxt(val, id, field, rec) {
+  if (rec) return '<td>'+(val||'—')+'</td>';
+  return '<td class="txt" data-id="'+id+'" data-field="'+field+'" data-orig="'+(val||'')+'">'
+    +'<span class="cv" contenteditable="true" spellcheck="false">'+(val||'')+'</span>'
+    +'<span class="ei">edit</span>'
+    +'</td>';
+}
+
+function mkDat(isoVal, labelVal, id, field, rec) {
+  if (rec) return '<td class="mono">'+(labelVal||isoVal||'—')+'</td>';
+  return '<td class="dat mono" data-id="'+id+'" data-field="'+field+'" data-orig="'+(isoVal||'')+'">'
+    +'<input type="date" value="'+(isoVal||'')+'" data-id="'+id+'" data-field="'+field+'" data-orig="'+(isoVal||'')+'" oninput="handleDateInput(this)"/>'
+    +'<span class="cal-icon">calendar_month</span>'
+    +'</td>';
+}
+
+function mkSel(val, id, field, opts, rec) {
+  if (rec) return '<td>'+val+'</td>';
+  return '<td class="sel" data-id="'+id+'" data-field="'+field+'">'
+    +'<select data-id="'+id+'" data-field="'+field+'" data-orig="'+val+'" onchange="editSel(this)">'+opts+'</select>'
+    +'<span class="chev">expand_more</span>'
+    +'</td>';
+}
+
+function handleDateInput(input) {
+  var td = input.closest('td.dat');
+  var iso = input.value;
+  if (!iso) return;
+  var d = new Date(iso + 'T00:00:00');
+  var mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+  var label = mon + ' ' + d.getDate();
+  // Update week cell
+  var tr = td.closest('tr');
+  var weekTd = tr.querySelector('td:first-child');
+  if (weekTd) {
+    var weekNum = Math.ceil((d - new Date(d.getFullYear(), 0, 1)) / 604800000);
+    weekTd.textContent = 'W' + weekNum;
+  }
+  // Track change
+  var orig = input.dataset.orig;
+  var key = input.dataset.id + '-' + input.dataset.field;
+  tr.classList.add('edited');
+  if (iso !== orig) {
+    input.classList.add('ce');
+    _schedule[key] = { mat:'anodes', field:'eta', label:'ETA ISAL', eta:label, supplier:'—', old:orig, new:label };
+  } else {
+    input.classList.remove('ce');
+    delete _schedule[key];
+    if (!tr.querySelectorAll('.ce').length) tr.classList.remove('edited');
+  }
+  if (hasChanges()) showSave(); else hideSave();
+}
+
+function wireCV(cv) {
+  var td = cv.parentElement;
+  cv.addEventListener('input', function(){ editCV(td); });
+  cv.addEventListener('keydown', function(e){
+    if (e.key==='Enter'){ e.preventDefault(); cv.blur(); }
+    if (e.key==='Escape'){ cv.textContent=td.dataset.orig; td.classList.remove('ce'); cv.blur(); }
+  });
+}
+
+function editCV(td) {
+  var val = td.querySelector('.cv').textContent.trim();
+  var orig = td.dataset.orig;
+  var tr = td.closest('tr');
+  tr.classList.add('edited');
+
+  // Validate max
+  var max = td.dataset.max !== undefined ? parseInt(td.dataset.max, 10) : undefined;
+  var numVal = parseInt(val, 10);
+  if (max !== undefined && !isNaN(numVal) && numVal > max) {
+    td.classList.add('err');
+    td.setAttribute('data-tip', 'Quantity cannot exceed ' + max.toLocaleString());
+  } else {
+    td.classList.remove('err');
+    td.removeAttribute('data-tip');
+  }
+
+  if (val !== orig) {
+    td.classList.add('ce');
+    var key = td.dataset.id + '-' + td.dataset.field;
+    var eta = tr.querySelector('[data-field="eta"] .cv');
+    var sup = tr.querySelector('[data-field="supplier"] select');
+    _schedule[key] = { mat:'anodes', field:td.dataset.field, label:_colLabels[td.dataset.field]||td.dataset.field, eta:eta?eta.textContent:'—', supplier:sup?sup.value:'—', old:orig, new:val };
+  } else {
+    td.classList.remove('ce');
+    delete _schedule[td.dataset.id+'-'+td.dataset.field];
+    if (!tr.querySelectorAll('.ce').length) tr.classList.remove('edited');
+  }
+  if (hasChanges()) showSave(); else hideSave();
+}
+
+function editSel(sel) {
+  var val = sel.value, orig = sel.dataset.orig;
+  var tr = sel.closest('tr');
+  tr.classList.add('edited');
+  if (sel.dataset.field==='status') tr.classList.toggle('cancelled', val==='cancelled');
+  if (val !== orig) {
+    sel.classList.add('ce');
+    _schedule[sel.dataset.id+'-'+sel.dataset.field] = { mat:'anodes', field:sel.dataset.field, label:_colLabels[sel.dataset.field]||sel.dataset.field, eta:'—', supplier:'—', old:orig, new:val };
+  } else {
+    sel.classList.remove('ce');
+    delete _schedule[sel.dataset.id+'-'+sel.dataset.field];
+    if (!tr.querySelectorAll('.ce').length) tr.classList.remove('edited');
+  }
+  if (hasChanges()) showSave(); else hideSave();
+}
+
+function step(btn, dir) {
+  var td = btn.closest('td.num');
+  var cv = td.querySelector('.cv');
+  var n = parseInt(cv.textContent.trim(), 10);
+  if (isNaN(n)) n = 0;
+  cv.textContent = String(Math.max(0, n + dir));
+  editCV(td);
+}
+
+function addRow() {
+  var id = Date.now();
+  // Default ETA to start date so the new row is always visible in the current timeframe
+  var startInput = document.getElementById('tf-start');
+  var defaultEta = startInput && startInput.value ? startInput.value : '2026-05-21';
+  var d = new Date(defaultEta);
+  var mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+  var etaLabel = mon + ' ' + d.getDate();
+  _rows.unshift({ id:id, week:'—', eta:defaultEta, etaLabel:etaLabel, supplier:'Wanfang', r76:0, s76:0, r75:0, s75:0, lr75:0, status:'ordered', notes:'', isNew:true });
+  renderArrivals();
+  // Focus the date picker of the new row
+  var dateInput = document.querySelector('#tbody-arrivals tr:first-child td.dat input[type="date"]');
+  if (dateInput) { dateInput.focus(); try { dateInput.showPicker(); } catch(e) {} }
+  _schedule['new-'+id] = { mat:'anodes', field:'new', label:'New vessel', eta:etaLabel, supplier:'Wanfang', old:'', new:'added' };
+  showSave();
+}
+
+// ── Costs table ───────────────────────────────────────────────────────
+function renderCosts() {
+  var tb = document.getElementById('tbody-costs-anodes');
+  if (!tb) return;
+  tb.innerHTML = '';
+  _costs.forEach(function(row) {
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>'+row.supplier+'</td>'+
+      mkTxt(row.unit,      null,'unit',      false)+
+      mkTxt(row.freight,   null,'freight',   false)+
+      mkTxt(row.demurrage, null,'demurrage', false)+
+      mkTxt(row.from,      null,'from',      false)+
+      mkTxt(row.to,        null,'to',        false)+
+      mkTxt(row.notes,     null,'notes',     false);
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('td.txt .cv').forEach(wireCV);
+}
+
+function wireCosts() {
+  document.querySelectorAll('td.txt .cv').forEach(function(cv){
+    if (!cv._wired) { cv._wired = true; wireCV(cv); }
+  });
+}
+
+// ── Save state ────────────────────────────────────────────────────────
+function hasChanges() { return Object.keys(_schedule).length > 0; }
+
+// ── Change count pills ─────────────────────────────────────────────────
+// _schedule keys are grouped by mat (currently only 'anodes') and field
+// Section mapping: arrivals fields = eta/supplier/r76/s76/r75/s75/lr75/status/notes/new
+//                  costs fields    = unit/freight/demurrage/from/to
+var _secFieldMap = {
+  arrivals:  ['eta','supplier','r76','s76','r75','s75','lr75','status','notes','new'],
+  costs:     ['unit','freight','demurrage','from','to'],
+  inventory: [],
+  consumption: [],
+  leadtimes: [],
+  transfers: [],
+  constraints: []
+};
+
+function updateChangeCounts() {
+  var changes = Object.values(_schedule);
+
+  // Per-material count
+  ['anodes','alumina','fluoride'].forEach(function(mat) {
+    var n = changes.filter(function(c){ return c.mat === mat; }).length;
+    var pill = document.getElementById('pill-mat-' + mat);
+    if (pill) {
+      pill.textContent = n;
+      pill.classList.toggle('visible', n > 0);
+    }
+  });
+
+  // Per-section count (only for currently visible material)
+  Object.keys(_secFieldMap).forEach(function(sec) {
+    var fields = _secFieldMap[sec];
+    var n = fields.length === 0 ? 0 : changes.filter(function(c){
+      return c.mat === _mat && fields.indexOf(c.field) !== -1;
+    }).length;
+
+    // Sidebar nav pill
+    var navPill = document.getElementById('pill-sec-' + _mat + '-' + sec);
+    if (navPill) { navPill.textContent = n; navPill.classList.toggle('visible', n > 0); }
+
+    // Section header pill
+    var hdrPill = document.getElementById('pill-hdr-' + _mat + '-' + sec);
+    if (hdrPill) { hdrPill.textContent = n; hdrPill.classList.toggle('visible', n > 0); }
+  });
+}
+function showSave() { document.getElementById('btn-save').classList.add('visible'); document.getElementById('btn-discard').classList.add('visible'); updateChangeCounts(); }
+function hideSave()  { document.getElementById('btn-save').classList.remove('visible'); document.getElementById('btn-discard').classList.remove('visible'); updateChangeCounts(); }
+
+function discardAll() {
+  renderArrivals();
+  renderCosts();
+  _schedule = {};
+  hideSave();
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────
+function openModal() {
+  var lines = [];
+  var se = Object.values(_schedule).filter(function(c){ return c.field!=='new'; });
+  var ne = Object.values(_schedule).filter(function(c){ return c.field==='new'; });
+  if (ne.length || se.length) {
+    if (lines.length) lines.push('<div style="border-top:1px solid var(--border);margin:8px 0;"></div>');
+    lines.push('<div style="font-size:9px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;">Delivery schedule</div>');
+    if (ne.length) lines.push('<div style="color:var(--ok);font-size:11px;margin-bottom:4px;">+ '+ne.length+' new vessel'+(ne.length>1?'s':'')+' added</div>');
+    se.forEach(function(c){
+      lines.push('<div style="margin-bottom:8px;"><div style="font-weight:500;margin-bottom:1px;">'+c.label+'</div><div style="font-size:10px;color:var(--faint);margin-bottom:3px;">'+c.eta+' · '+c.supplier+'</div><div class="diff-row"><span class="diff-old">'+c.old+'</span><span class="diff-arr"> → </span><span class="diff-new">'+c.new+'</span></div></div>');
+    });
+  }
+  document.getElementById('modal-diff').innerHTML = lines.length ? lines.join('') : '<div style="color:var(--muted);">No changes detected.</div>';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function confirmSave() {
+  closeModal();
+  document.querySelectorAll('td.ce').forEach(function(el){
+    var cv = el.querySelector('.cv');
+    if (cv) el.dataset.orig = cv.textContent.trim();
+    el.classList.remove('ce');
+  });
+  document.querySelectorAll('select.ce').forEach(function(s){ s.dataset.orig=s.value; s.classList.remove('ce'); });
+  document.querySelectorAll('tr.edited').forEach(function(tr){ tr.classList.remove('edited'); });
+  _schedule = {};
+  hideSave();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────
+function toggleRec(el) {
+  var lbl = el.querySelector('span:last-child');
+  var ico = el.querySelector('.material-icons');
+  lbl.textContent = lbl.textContent.startsWith('Show') ? 'Hide received deliveries' : lbl.textContent.replace('Hide','Show');
+  ico.textContent = ico.textContent==='expand_more' ? 'expand_less' : 'expand_more';
+}
+
+// ── Init ──────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  applyViewMode();
+  var chip = document.getElementById('chip-today');
+  if (chip) {
+    var now = new Date();
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var label = months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+    chip.innerHTML = '<span style="font-weight:500;color:var(--text);">Today</span>&nbsp;' + label;
+  }
+  // Wrap section body content and inject chevrons
+  document.querySelectorAll('.section').forEach(function(sec) {
+    var hdr = sec.querySelector('.section-hdr');
+    if (!hdr) return;
+
+    // Wrap everything after the hdr in a .section-body div
+    var body = document.createElement('div');
+    body.className = 'section-body';
+    var children = Array.prototype.slice.call(sec.childNodes);
+    children.forEach(function(node) {
+      if (node !== hdr) body.appendChild(node);
+    });
+    sec.appendChild(body);
+
+    // Inject chevron before the section title
+    var chevron = document.createElement('span');
+    chevron.className = 'sec-chevron';
+    chevron.textContent = 'expand_more';
+
+    var leftEl = hdr.firstElementChild;
+    // If leftEl is the section-title span itself, wrap it + chevron in a flex div
+    if (leftEl.classList.contains('section-title')) {
+      var wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;align-items:center;gap:8px;';
+      hdr.insertBefore(wrapper, leftEl);
+      wrapper.appendChild(leftEl);
+      wrapper.appendChild(chevron);
+    } else {
+      // leftEl is already a flex div — append chevron after section-title
+      var titleEl = leftEl.querySelector('.section-title');
+      if (titleEl && titleEl.nextSibling) {
+        leftEl.insertBefore(chevron, titleEl.nextSibling);
+      } else {
+        leftEl.appendChild(chevron);
+      }
+      leftEl.style.gap = '8px';
+    }
+
+    // Toggle on header click, but not if clicking a button inside it
+    hdr.addEventListener('click', function(e) {
+      if (e.target.closest('button')) return;
+      sec.classList.toggle('collapsed');
+    });
+  });
+
+  selMat('anodes');
+});
+</script>
+</body>
+</html>
