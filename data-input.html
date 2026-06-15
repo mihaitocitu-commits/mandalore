@@ -19,7 +19,7 @@
   --modified:#185FA5; --modified-bg:#E6F1FB;
   --sans:'IBM Plex Sans',sans-serif;
   --mono:'IBM Plex Mono',monospace;
-  --pageheader-h:56px; --sidebar-w:224px; --chrome:56px;
+  --pageheader-h:56px; --sidebar-w:224px; --chrome:56px; --toolbar-h:56px;
 }
 body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:13px; }
 
@@ -156,11 +156,16 @@ td[data-tip]:hover::before {
 }
 
 /* ── Content area ── */
-.content { padding:24px 28px 60px; }
+.content { padding:calc(var(--toolbar-h) + 26px) 28px 60px; }
+.content-toolbar {
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
 
 
 /* Section */
-.section { margin-bottom:28px; scroll-margin-top:calc(var(--chrome) + 16px); }
+.section { margin-bottom:28px; scroll-margin-top:calc(var(--chrome) + var(--toolbar-h) + 20px); }
 .section-hdr { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; cursor:pointer; user-select:none; }
 .section-hdr:hover .sec-chevron { color:var(--muted); }
 .sec-chevron { font-size:16px; color:var(--faint); font-family:'Material Icons'; font-style:normal; line-height:1; user-select:none; flex-shrink:0; transition:transform 0.15s; margin-right:0; }
@@ -322,7 +327,7 @@ tr:hover .chev { color:var(--faint); }
 <!-- v2 -->
 <div class="page-header">
   <div style="display:flex;align-items:center;gap:16px;">
-    <div class="page-title">ISAL — Data Input</div>
+    <div class="page-title">RTA — Data Input</div>
     <div style="display:flex;align-items:center;gap:8px;">
       <span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 10px;border-radius:11px;background:var(--bg3);border:1px solid var(--border);font-size:11px;color:var(--muted);font-family:var(--sans);">
         <span style="font-weight:500;color:var(--text);">Last update</span>&nbsp;May 21, 2026
@@ -342,37 +347,23 @@ tr:hover .chev { color:var(--faint); }
 
   <!-- Sidebar -->
   <div class="sidebar">
+    <div class="sb-label">Region</div>
+    <div class="tf-wrap" style="padding-top:0;">
+      <div class="tf-field">
+        <div style="position:relative;">
+          <span class="material-icons" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--muted);pointer-events:none;">location_on</span>
+          <select class="tf-select" id="region-select" style="padding-left:26px;font-weight:600;color:var(--text);">
+            <option value="isal" selected>ISAL</option>
+            <option value="qc">QC</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="sb-divider"></div>
     <div class="sb-label">Material</div>
     <button class="mat-btn active" id="tab-anodes"   onclick="selMat('anodes')"><span class="mat-badge anodes">C</span>Anodes<span class="chg-pill" id="pill-mat-anodes"></span></button>
     <button class="mat-btn"        id="tab-alumina"  onclick="selMat('alumina')"><span class="mat-badge alumina">Al</span>Alumina<span class="chg-pill" id="pill-mat-alumina"></span></button>
     <button class="mat-btn"        id="tab-fluoride" onclick="selMat('fluoride')"><span class="mat-badge fluoride">F</span>Fluoride<span class="chg-pill" id="pill-mat-fluoride"></span></button>
-    <div class="sb-divider"></div>
-    <div class="sb-label">View parameters</div>
-    <div class="tf-wrap">
-      <div class="tf-field">
-        <div class="tf-label">Data</div>
-        <div style="display:flex;background:#e8e9eb;border-radius:6px;padding:3px;gap:2px;">
-          <button id="vm-plan"    onclick="setViewMode('plan')"    style="flex:1;height:24px;border:none;border-radius:4px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.12);color:#1a1a1a;font-size:11px;font-weight:500;font-family:var(--sans);cursor:pointer;">Plan</button>
-          <button id="vm-history" onclick="setViewMode('history')" style="flex:1;height:24px;border:none;border-radius:4px;background:transparent;box-shadow:none;color:#6b7280;font-size:11px;font-weight:400;font-family:var(--sans);cursor:pointer;">History</button>
-        </div>
-      </div>
-      <div class="tf-field">
-        <div class="tf-label">Table view</div>
-        <div style="display:flex;background:#e8e9eb;border-radius:6px;padding:3px;gap:2px;">
-          <button id="vt-summary" onclick="setTableView('summary')" style="flex:1;height:24px;border:none;border-radius:4px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.12);color:#1a1a1a;font-size:11px;font-weight:500;font-family:var(--sans);cursor:pointer;">Summary</button>
-          <button id="vt-detail"  onclick="setTableView('detail')"  style="flex:1;height:24px;border:none;border-radius:4px;background:transparent;box-shadow:none;color:#6b7280;font-size:11px;font-weight:400;font-family:var(--sans);cursor:pointer;">Detail</button>
-        </div>
-      </div>
-      <div class="tf-field">
-        <div class="tf-label">Horizon</div>
-        <div id="horizon-toggle" style="display:flex;background:#e8e9eb;border-radius:6px;padding:3px;gap:2px;">
-          <button onclick="setHorizon(this)" data-w="1" style="flex:1;height:24px;border:none;border-radius:4px;background:transparent;box-shadow:none;color:#6b7280;font-size:11px;font-weight:400;font-family:var(--sans);cursor:pointer;">1W</button>
-          <button onclick="setHorizon(this)" data-w="2" style="flex:1;height:24px;border:none;border-radius:4px;background:transparent;box-shadow:none;color:#6b7280;font-size:11px;font-weight:400;font-family:var(--sans);cursor:pointer;">2W</button>
-          <button onclick="setHorizon(this)" data-w="3" style="flex:1;height:24px;border:none;border-radius:4px;background:transparent;box-shadow:none;color:#6b7280;font-size:11px;font-weight:400;font-family:var(--sans);cursor:pointer;">3W</button>
-          <button onclick="setHorizon(this)" data-w="4" style="flex:1;height:24px;border:none;border-radius:4px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.12);color:#1a1a1a;font-size:11px;font-weight:500;font-family:var(--sans);cursor:pointer;">4W</button>
-        </div>
-      </div>
-    </div>
     <div class="sb-divider"></div>
     <div style="padding:0 12px;margin-bottom:8px;">
       <div class="sb-label" style="margin:0;padding:0;">Tables</div>
@@ -382,6 +373,36 @@ tr:hover .chev { color:var(--faint); }
 
   <!-- Content -->
   <div class="content">
+
+  <!-- Fixed toolbar -->
+  <div style="position:fixed;top:var(--chrome);left:calc(var(--sidebar-w) + 16px + 28px);right:28px;z-index:99;padding:10px 0;">
+    <div class="content-toolbar" style="background:#fff;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08),0 0 0 1px var(--border);padding:10px 16px;">
+    <!-- Search -->
+    <div style="position:relative;flex-shrink:0;">
+      <span class="material-icons" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--faint);pointer-events:none;">search</span>
+      <input type="text" placeholder="Search tables…" style="height:30px;width:200px;border:1px solid var(--border);border-radius:4px;background:var(--bg);font-size:12px;font-family:var(--sans);color:var(--text);padding:0 10px 0 28px;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"/>
+    </div>
+    <!-- Divider -->
+    <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;"></div>
+    <!-- Date from/to -->
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <span style="font-size:11px;color:var(--muted);font-family:var(--sans);">From</span>
+      <input type="date" id="toolbar-from" value="2026-05-21" style="height:30px;border:1px solid var(--border);border-radius:4px;background:var(--bg);font-size:12px;font-family:var(--sans);color:var(--text);padding:0 8px;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"/>
+      <span style="font-size:11px;color:var(--muted);font-family:var(--sans);">To</span>
+      <input type="date" id="toolbar-to"   value="2026-06-18" style="height:30px;border:1px solid var(--border);border-radius:4px;background:var(--bg);font-size:12px;font-family:var(--sans);color:var(--text);padding:0 8px;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"/>
+    </div>
+    <!-- Divider -->
+    <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;"></div>
+    <!-- Table view toggle -->
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <span style="font-size:11px;color:var(--muted);font-family:var(--sans);">View</span>
+      <div style="display:flex;background:#e8e9eb;border-radius:6px;padding:3px;gap:2px;">
+        <button id="tb-vt-detail"  onclick="setTableView('detail')"  style="height:24px;padding:0 12px;border:none;border-radius:4px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.12);color:#1a1a1a;font-size:11px;font-weight:500;font-family:var(--sans);cursor:pointer;">Single table</button>
+        <button id="tb-vt-summary" onclick="setTableView('summary')" style="height:24px;padding:0 12px;border:none;border-radius:4px;background:transparent;box-shadow:none;color:#6b7280;font-size:11px;font-weight:400;font-family:var(--sans);cursor:pointer;">Multi table</button>
+      </div>
+    </div>
+    </div>
+  </div>
 
   <!-- ══ ANODES ══ -->
   <div id="mat-anodes">
@@ -701,63 +722,65 @@ function setHorizon(btn) {
 }
 
 // ── Summary / Detail view ─────────────────────────────────────────────
-var _tableView = 'summary';
+var _tableView = 'detail';
 function setTableView(mode) {
   _tableView = mode;
-  var sum = document.getElementById('vt-summary');
-  var det = document.getElementById('vt-detail');
-  if (sum && det) {
-    sum.style.background  = mode === 'summary' ? '#fff' : 'transparent';
-    sum.style.boxShadow   = mode === 'summary' ? '0 1px 3px rgba(0,0,0,0.12)' : 'none';
-    sum.style.color       = mode === 'summary' ? '#1a1a1a' : '#6b7280';
-    sum.style.fontWeight  = mode === 'summary' ? '500' : '400';
-    det.style.background  = mode === 'detail'  ? '#fff' : 'transparent';
-    det.style.boxShadow   = mode === 'detail'  ? '0 1px 3px rgba(0,0,0,0.12)' : 'none';
-    det.style.color       = mode === 'detail'  ? '#1a1a1a' : '#6b7280';
-    det.style.fontWeight  = mode === 'detail'  ? '500' : '400';
-  }
+  // Sync both sidebar and toolbar toggles
+  ['vt-summary','tb-vt-summary'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.style.background = mode === 'summary' ? '#fff' : 'transparent'; el.style.boxShadow = mode === 'summary' ? '0 1px 3px rgba(0,0,0,0.12)' : 'none'; el.style.color = mode === 'summary' ? '#1a1a1a' : '#6b7280'; el.style.fontWeight = mode === 'summary' ? '500' : '400'; }
+  });
+  ['vt-detail','tb-vt-detail'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.style.background = mode === 'detail' ? '#fff' : 'transparent'; el.style.boxShadow = mode === 'detail' ? '0 1px 3px rgba(0,0,0,0.12)' : 'none'; el.style.color = mode === 'detail' ? '#1a1a1a' : '#6b7280'; el.style.fontWeight = mode === 'detail' ? '500' : '400'; }
+  });
 
   var hz = document.getElementById('horizon-toggle');
-  if (!hz) return;
-  var options = mode === 'detail' ? [2,4,6,8] : [1,2,3,4];
-  var defaultW = mode === 'detail' ? 8 : 4;
-  hz.innerHTML = '';
-  options.forEach(function(w) {
-    var btn = document.createElement('button');
-    btn.setAttribute('data-w', w);
-    btn.textContent = w + 'W';
-    btn.onclick = function(){ setHorizon(btn); };
-    var isActive = w === defaultW;
-    btn.style.cssText = 'flex:1;height:24px;border:none;border-radius:4px;font-size:11px;font-family:var(--sans);cursor:pointer;'
-      + (isActive ? 'background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.12);color:#1a1a1a;font-weight:500;'
-                  : 'background:transparent;box-shadow:none;color:#6b7280;font-weight:400;');
-    hz.appendChild(btn);
-  });
+  if (hz) {
+    var options = mode === 'detail' ? [2,4,6,8] : [1,2,3,4];
+    var defaultW = mode === 'detail' ? 8 : 4;
+    hz.innerHTML = '';
+    options.forEach(function(w) {
+      var btn = document.createElement('button');
+      btn.setAttribute('data-w', w);
+      btn.textContent = w + 'W';
+      btn.onclick = function(){ setHorizon(btn); };
+      var isActive = w === defaultW;
+      btn.style.cssText = 'flex:1;height:24px;border:none;border-radius:4px;font-size:11px;font-family:var(--sans);cursor:pointer;'
+        + (isActive ? 'background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.12);color:#1a1a1a;font-weight:500;'
+                    : 'background:transparent;box-shadow:none;color:#6b7280;font-weight:400;');
+      hz.appendChild(btn);
+    });
+  }
   applyTimeframe();
 
   var matEl = document.getElementById('mat-' + _mat);
   if (!matEl) return;
 
   if (mode === 'summary') {
-    // Show all sections
-    matEl.querySelectorAll('.section').forEach(function(s){ s.style.display = ''; });
-    // Restore sec-nav as anchor links
+    // Multi table: show all sections
+    showAllSections();
     document.querySelectorAll('#sec-nav .sec-btn').forEach(function(btn) {
       btn.onclick = function() {
-        var sec = document.getElementById('s-' + btn.dataset.mat + '-' + btn.dataset.sec);
+        var sec = document.getElementById('s-' + _mat + '-' + btn.dataset.sec);
         if (sec) sec.scrollIntoView({ behavior:'smooth' });
         document.querySelectorAll('#sec-nav .sec-btn').forEach(function(b){ b.classList.remove('active'); });
         btn.classList.add('active');
       };
     });
-    // Reveal all, show first
-    var first = document.querySelector('#sec-nav .sec-btn');
-    if (first) { first.classList.add('active'); var target = document.getElementById('s-'+_mat+'-'+first.dataset.sec); if(target) target.scrollIntoView(); }
   } else {
-    // Show only first section by default
-    var firstSec = _secs[_mat][0];
-    showDetailSection(firstSec ? firstSec[0] : null);
-    // Wire sec-nav buttons to switch detail section
+    // Single table: show only the currently active nav section
+    var activeBtn = document.querySelector('#sec-nav .sec-btn.active');
+    var activeSec = activeBtn
+      ? activeBtn.dataset.sec
+      : (_secs[_mat] && _secs[_mat][0] ? _secs[_mat][0][0] : null);
+    if (!activeSec) {
+      // Last resort: first section element under this mat
+      var firstSection = document.querySelector('#mat-' + _mat + ' .section');
+      if (firstSection) activeSec = firstSection.id.replace('s-' + _mat + '-', '');
+    }
+    showDetailSection(activeSec);
+    // Nav buttons switch which single table is visible
     document.querySelectorAll('#sec-nav .sec-btn').forEach(function(btn) {
       btn.onclick = function() {
         document.querySelectorAll('#sec-nav .sec-btn').forEach(function(b){ b.classList.remove('active'); });
@@ -765,9 +788,6 @@ function setTableView(mode) {
         showDetailSection(btn.dataset.sec);
       };
     });
-    // Activate first
-    var firstBtn = document.querySelector('#sec-nav .sec-btn');
-    if (firstBtn) firstBtn.classList.add('active');
   }
 }
 
@@ -775,10 +795,15 @@ function showDetailSection(secKey) {
   var matEl = document.getElementById('mat-' + _mat);
   if (!matEl) return;
   matEl.querySelectorAll('.section').forEach(function(s){
-    var id = s.id; // e.g. s-anodes-arrivals
-    var key = id.replace('s-' + _mat + '-', '');
+    var key = s.id.replace('s-' + _mat + '-', '');
     s.style.display = (key === secKey) ? '' : 'none';
   });
+}
+
+function showAllSections() {
+  var matEl = document.getElementById('mat-' + _mat);
+  if (!matEl) return;
+  matEl.querySelectorAll('.section').forEach(function(s){ s.style.display = ''; });
 }
 
 // ── Add row (static HTML tables) ─────────────────────────────────────
@@ -874,6 +899,7 @@ function selMat(mat) {
   renderCosts();
   setTimeout(wireCosts, 0);
   updateChangeCounts();
+  setTimeout(function(){ setTableView(_tableView); }, 0);
 }
 
 // ── Sidebar section nav ───────────────────────────────────────────────
@@ -888,10 +914,14 @@ function buildSecNav(mat) {
     btn.dataset.mat = mat;
     btn.innerHTML = '<span class="material-icons">' + (_secIcons[s[0]] || 'circle') + '</span>' + s[1] + '<span class="chg-pill" id="pill-sec-'+mat+'-'+s[0]+'"></span>';
     btn.onclick = function() {
-      var sec = document.getElementById('s-' + mat + '-' + s[0]);
-      if (sec) sec.scrollIntoView({ behavior:'smooth' });
       el.querySelectorAll('.sec-btn').forEach(function(b){ b.classList.remove('active'); });
       btn.classList.add('active');
+      if (_tableView === 'detail') {
+        showDetailSection(s[0]);
+      } else {
+        var sec = document.getElementById('s-' + mat + '-' + s[0]);
+        if (sec) sec.scrollIntoView({ behavior:'smooth' });
+      }
     };
     el.appendChild(btn);
   });
