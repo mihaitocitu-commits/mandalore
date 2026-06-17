@@ -10,7 +10,7 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg:#F5F6F8; --bg2:#FFFFFF; --bg3:#ECEEF2; --fill:#E8EAF0;
+  --bg:#f5f5f5; --bg2:#FFFFFF; --bg3:#ECEEF2; --fill:#E8EAF0;
   --border:#DDE1E8; --border2:#C8CDD8;
   --text:#1A2333; --muted:#6B7A94; --faint:#9AA3B4;
   --ok:#1A6E38; --ok-bg:#EBF5EF;
@@ -19,7 +19,7 @@
   --modified:#185FA5; --modified-bg:#E6F1FB;
   --sans:'IBM Plex Sans',sans-serif;
   --mono:'IBM Plex Mono',monospace;
-  --pageheader-h:56px; --sidebar-w:224px; --chrome:56px; --toolbar-h:56px;
+  --pageheader-h:40px; --sidebar-w:224px; --chrome:40px; --toolbar-h:56px;
 }
 body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:13px; }
 
@@ -27,21 +27,21 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 /* ── Page header (fixed, below topbar) ── */
 .page-header {
   position:fixed; top:0; left:0; right:0; height:var(--pageheader-h);
-  background:var(--bg2); border-bottom:1px solid var(--border); z-index:190;
-  display:flex; align-items:center; justify-content:space-between; padding:0 32px;
+  background:#141b24; z-index:190;
+  display:flex; align-items:center; justify-content:space-between; padding:0 16px 0 0;
 }
-.page-title { font-size:15px; font-weight:600; color:var(--text); letter-spacing:0.02em; text-transform:uppercase; }
-.save-row { display:flex; align-items:center; gap:8px; }
-.btn-discard { display:none; padding:8px 18px; border-radius:2px; border:1px solid var(--border2); background:none; color:var(--muted); font-size:13px; font-weight:500; font-family:var(--sans); cursor:pointer; }
+.page-title { font-size:12px; font-weight:500; color:#dfe3ec; letter-spacing:0.16em; text-transform:uppercase; font-family:var(--sans); }
+.save-row { display:flex; align-items:center; gap:8px; margin-left:auto; }
+.btn-discard { display:none; padding:6px 14px; border-radius:3px; border:1px solid var(--border); background:#fff; color:var(--muted); font-size:12px; font-weight:500; font-family:var(--sans); cursor:pointer; }
 .btn-discard.visible { display:inline-flex; }
-.btn-save { display:none; padding:8px 18px; border-radius:2px; border:none; background:var(--text); color:#fff; font-size:13px; font-weight:500; font-family:var(--sans); cursor:pointer; }
+.btn-save { display:none; padding:6px 14px; border-radius:3px; border:none; background:var(--text); color:#fff; font-size:12px; font-weight:500; font-family:var(--sans); cursor:pointer; }
 .btn-save.visible { display:inline-flex; }
 
 /* ── Layout: sidebar + content ── */
 .layout {
   margin-top:var(--chrome);
   display:grid;
-  grid-template-columns:calc(var(--sidebar-w) + 16px) 1fr;
+  grid-template-columns:var(--sidebar-w) 1fr;
   min-height:calc(100vh - var(--chrome));
   align-items:start;
   gap:0;
@@ -49,13 +49,12 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 
 /* ── Left sidebar card ── */
 .sidebar {
-  position:sticky; top:calc(var(--chrome) + 12px); 
-  height:calc(100vh - var(--chrome) - 24px);
+  position:sticky; top:var(--chrome);
+  height:calc(100vh - var(--chrome));
   overflow-y:auto; overflow-x:hidden; scrollbar-width:thin;
-  background:var(--bg2);
-  border-radius:4px;
-  margin:12px 0 12px 16px;
-  padding:12px 0;
+  background:var(--bg);
+  border-right:1px solid var(--border);
+  margin:0; padding:0;
   display:flex; flex-direction:column; gap:0;
   box-sizing:border-box; width:var(--sidebar-w);
 }
@@ -64,24 +63,24 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 
 /* Sidebar section labels */
 .sb-label {
-  font-size:9px; font-weight:600; letter-spacing:0.09em; text-transform:uppercase;
-  color:var(--faint); padding:0 16px; margin-bottom:4px; margin-top:8px;
+  font-size:8px; font-weight:400; letter-spacing:0.04em; text-transform:uppercase;
+  color:#999; padding:0 12px; margin-bottom:4px; margin-top:12px;
 }
-.sb-label:first-child { margin-top:0; }
+.sb-label:first-child { margin-top:8px; }
 
 /* Material buttons */
 .mat-btn {
-  display:flex; align-items:center; gap:9px; padding:7px 16px;
-  font-size:12px; font-weight:500; color:var(--muted); text-transform:uppercase;
+  display:flex; align-items:center; gap:8px; padding:6px 12px;
+  font-size:12px; font-weight:500; color:#62666c; text-transform:uppercase; letter-spacing:0.04em;
   background:none; border:none; cursor:pointer; font-family:var(--sans);
-  width:100%; text-align:left; transition:background 0.1s;
+  width:100%; text-align:left;
 }
-.mat-btn:hover { background:var(--bg3); color:var(--text); }
-.mat-btn.active { background:var(--bg3); color:var(--text); }
-.mat-badge { width:22px; height:22px; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; font-family:var(--mono); flex-shrink:0; background:var(--muted); color:#fff; }
+.mat-btn:hover { color:var(--text); }
+.mat-btn.active { background:#fff; color:var(--text); }
+.mat-badge { width:20px; height:20px; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; font-family:var(--mono); flex-shrink:0; background:#141b24; color:#fff; }
 
 /* Sidebar divider */
-.sb-divider { height:1px; background:var(--border); margin:10px 16px; }
+.sb-divider { height:1px; background:var(--border); margin:8px 0; }
 /* Timeframe fields */
 .tf-wrap { padding:4px 12px; display:flex; flex-direction:column; gap:8px; }
 .tf-field { display:flex; flex-direction:column; gap:3px; }
@@ -98,14 +97,14 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 
 /* Section nav buttons */
 .sec-btn {
-  display:flex; align-items:center; gap:8px; padding:6px 16px;
-  font-size:12px; color:var(--muted);
+  display:flex; align-items:center; gap:8px; padding:6px 12px;
+  font-size:12px; color:#62666c; letter-spacing:0.02em;
   background:none; border:none; cursor:pointer; font-family:var(--sans);
-  width:100%; text-align:left; transition:background 0.1s;
+  width:100%; text-align:left;
 }
-.sec-btn:hover { background:var(--bg3); color:var(--text); }
-.sec-btn.active { background:var(--bg3); color:var(--text); font-weight:500; border-left:2px solid var(--text); padding-left:14px; }
-.sec-btn .material-icons { font-size:14px; opacity:0.6; flex-shrink:0; }
+.sec-btn:hover { color:var(--text); }
+.sec-btn.active { background:#fff; color:var(--text); font-weight:400; border-left:none; padding-left:12px; }
+.sec-btn .material-icons { font-size:12px; opacity:0.6; flex-shrink:0; }
 .sec-btn.active .material-icons { opacity:1; }
 
 /* ── View mode select ── */
@@ -124,7 +123,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 
 /* ── Summary/Detail toggle ── */
 .view-toggle { display:flex; gap:0; border:1px solid var(--border); border-radius:4px; overflow:hidden; width:100%; }
-.vt-btn { height:22px; padding:0 8px; border:none; background:transparent; color:var(--muted); font-size:11px; font-family:var(--sans); cursor:pointer; border-right:1px solid var(--border); flex:1; }
+.vt-btn { height:22px; padding:0 8px; border:none; background:#fff; color:var(--muted); font-size:11px; font-family:var(--sans); cursor:pointer; border-right:1px solid var(--border); flex:1; }
 .vt-btn:last-child { border-right:none; }
 .vt-btn.active { background:var(--blue); color:#fff; }
 .vt-btn:hover:not(.active) { background:var(--hover); color:var(--text); }
@@ -156,7 +155,7 @@ td[data-tip]:hover::before {
 }
 
 /* ── Content area ── */
-.content { padding:calc(var(--toolbar-h) + 26px) 28px 60px; }
+.content { padding:calc(var(--toolbar-h) + 24px) 28px 60px; }
 .content-toolbar {
   display:flex;
   align-items:center;
@@ -169,7 +168,7 @@ td[data-tip]:hover::before {
 .section-hdr { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; cursor:pointer; user-select:none; }
 .section-hdr:hover .sec-chevron { color:var(--muted); }
 .sec-chevron { font-size:16px; color:var(--faint); font-family:'Material Icons'; font-style:normal; line-height:1; user-select:none; flex-shrink:0; transition:transform 0.15s; margin-right:0; }
-.section-title { font-size:13px; font-weight:600; color:var(--text); margin-left:0; }
+.section-title { font-size:15px; font-weight:600; color:var(--text); margin-left:0; }
 .sec-chevron + .section-title { margin-left:0; }
 
 /* Chevron–title gap handled by wrapper gap override */
@@ -178,17 +177,54 @@ td[data-tip]:hover::before {
 .section.collapsed .sec-chevron { transform:rotate(-90deg); }
 .section-body { }
 .section.collapsed .section-body { display:none; }
-.section-title { font-size:13px; font-weight:600; color:var(--text); }
-.score-badge { padding:2px 7px; border-radius:4px; font-size:10px; font-weight:500; font-family:var(--mono); background:var(--bg3); color:var(--muted); }
+.section-title { font-size:15px; font-weight:600; color:var(--text); }
+.score-badge { display:none; }
 .source-note { font-size:11px; color:var(--faint); font-family:var(--mono); display:flex; align-items:center; gap:4px; }
-.hdr-right { display:flex; align-items:center; gap:8px; }
+.hdr-right { display:flex; align-items:center; gap:16px; }
+.hdr-sep { width:1px; height:14px; background:var(--border); flex-shrink:0; }
+.copy-icon { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; cursor:pointer; color:var(--muted); flex-shrink:0; position:relative; }
+.copy-icon:hover { color:var(--text); }
+.copy-icon[data-tip]:hover::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:var(--text); color:#fff; font-size:11px; font-family:var(--sans); white-space:nowrap; padding:4px 8px; border-radius:3px; z-index:300; pointer-events:none; }
+.copy-icon[data-tip]:hover::before { content:''; position:absolute; bottom:calc(100% + 1px); left:50%; transform:translateX(-50%); border:4px solid transparent; border-top-color:var(--text); z-index:300; pointer-events:none; }
+
+/* ── Static table editable cells ── */
+td.s-edit { position:relative; cursor:text; }
+td.s-edit:hover { background:#f7f7f7; }
+td.s-edit:focus-within { background:#fff; outline:2px solid var(--blue); outline-offset:-2px; }
+td.s-edit .s-type-icon { position:absolute; right:5px; top:50%; transform:translateY(-50%); font-size:11px; color:#ccc; opacity:0; pointer-events:none; font-family:'Material Icons'; font-style:normal; line-height:1; transition:opacity 0.1s; }
+td.s-edit:hover .s-type-icon { opacity:1; }
+td.s-dd { cursor:pointer; }
+td.s-dd select { position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; }
+td.s-dd:hover { background:#f7f7f7; }
+td.s-dd:focus-within { background:#fff; outline:2px solid var(--blue); outline-offset:-2px; }
+#copy-toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(12px);
+  background:#141b24; color:#fff; font-size:12px; font-family:var(--sans);
+  padding:10px 18px; border-radius:4px; z-index:500;
+  opacity:0; transition:opacity 0.15s, transform 0.15s; pointer-events:none;
+  white-space:nowrap;
+}
+#copy-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 .sn-icon { font-size:13px; color:var(--border2); font-family:"Material Icons"; font-style:normal; line-height:1; user-select:none; vertical-align:middle; }
 
 /* Table toolbar */
 .tbar-sep { width:1px; height:16px; background:var(--border2); }
-.add-btn { display:flex; align-items:center; gap:4px; padding:5px 12px; border-radius:2px; border:1px solid var(--border); background:var(--bg2); font-size:11px; font-weight:500; color:var(--text); cursor:pointer; font-family:var(--sans); }
+.add-btn { display:flex; align-items:center; gap:4px; padding:5px 12px; border-radius:2px; border:none; background:#fff; font-size:11px; font-weight:500; color:var(--text); cursor:pointer; font-family:var(--sans); }
 .add-btn:hover { background:var(--bg3); }
 .add-btn .material-icons { font-size:14px; }
+
+/* ── Empty hint row ── */
+tr.empty-row td { background:#f7f7f7; color:#bbb; font-size:11px; font-family:var(--sans); font-style:normal; cursor:pointer; border-bottom:1px solid var(--border); }
+tr.empty-row:hover td { background:#eeeeee; }
+tr.empty-row td:focus { background:#fff; color:var(--text); font-style:normal; outline:2px solid var(--blue); outline-offset:-2px; }
+/* Active (editing) row - individual cell hover */
+tr.active-row td.num .steppers { opacity:1; }
+tr.active-row td.s-edit:hover { background:#fff; }
+/* Add row hint - always visible when empty */
+[placeholder]:empty::before { content:"＋  " attr(placeholder); color:#999; font-style:normal; pointer-events:none; font-size:11px; }
+/* Dropdown/date hover hint - only on hover */
+td[data-hover-hint]::before { content:none; }
+td[data-hover-hint]:hover::before { content:attr(data-hover-hint); color:#bbb; font-style:normal; pointer-events:none; font-size:11px; }
 
 /* Tables */
 .tw { overflow-x:auto; border-radius:4px; }
@@ -196,7 +232,7 @@ table { width:100%; border-collapse:collapse; font-size:12px; }
 thead th {
   text-align:left; padding:8px 12px;
   font-size:9px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase;
-  color:var(--faint); background:var(--bg3);
+  color:var(--faint); background:#e9e9e9;
   border-bottom:1px solid var(--border); border-right:1px solid var(--border);
   white-space:nowrap;
 }
@@ -205,8 +241,9 @@ thead tr:nth-child(2) th { padding-top:4px; padding-bottom:4px; font-size:8px; }
 thead th.grp { text-align:center; color:var(--muted); }
 tbody tr { background:var(--bg2); border-bottom:1px solid var(--fill); }
 tbody tr:last-child { border-bottom:none; }
-tbody tr:hover { background:var(--bg3); }
+tbody tr:hover { background:#f7f7f7; }
 tbody tr.edited td:first-child { border-left:3px solid var(--modified); }
+tbody tr.edited.incomplete td:first-child { border-left:3px solid var(--danger); }
 tbody tr.cancelled { opacity:0.5; }
 tbody tr.cancelled td { color:var(--faint); }
 tbody tr.cancelled input, tbody tr.cancelled select { color:var(--faint); pointer-events:none; }
@@ -235,14 +272,15 @@ td.num.ce .cv, td.txt.ce .cv { background:var(--modified-bg); color:var(--modifi
 /* Steppers */
 .steppers {
   position:absolute; right:3px; top:50%; transform:translateY(-50%);
-  display:flex; flex-direction:column; gap:1px;
+  display:flex; flex-direction:column; gap:1px; opacity:0;
 }
 .step {
   width:10px; height:9px; border:none; background:none; cursor:pointer; padding:0;
   display:flex; align-items:center; justify-content:center;
   font-size:7px; color:var(--border2); line-height:1; border-radius:1px;
 }
-tr:hover .step { color:var(--faint); }
+td.num:hover .steppers { opacity:1; }
+td.num:hover .step { color:var(--faint); }
 .step:hover { color:var(--muted) !important; background:var(--bg3); }
 
 /* Edit icon */
@@ -257,7 +295,7 @@ tr:hover .ei { color:var(--faint); }
 td.dat { padding:0; position:relative; }
 td.dat input[type="date"] {
   width:100%; min-height:36px; padding:9px 28px 9px 12px;
-  border:none; background:transparent; font-size:12px; font-family:var(--mono);
+  border:none; background:#fff; font-size:12px; font-family:var(--mono);
   color:var(--text); outline:none; cursor:pointer;
   appearance:none; -webkit-appearance:none;
   position:relative; z-index:1;
@@ -276,7 +314,7 @@ td.dat input[type="date"]:focus ~ .cal-icon { color:var(--modified); }
 /* Select */
 td.sel select {
   width:100%; min-height:36px; padding:9px 26px 9px 12px;
-  border:none; background:transparent; font-size:12px; font-family:var(--sans);
+  border:none; background:#fff; font-size:12px; font-family:var(--sans);
   color:var(--text); outline:none; cursor:pointer; appearance:none; -webkit-appearance:none;
   position:relative; z-index:1;
 }
@@ -324,22 +362,18 @@ tr:hover .chev { color:var(--faint); }
 </head>
 <body>
 
-<!-- v2 -->
+<!-- Copy toast -->
+<div id="copy-toast"></div>
+
+<!-- v2-3 -->
 <div class="page-header">
-  <div style="display:flex;align-items:center;gap:16px;">
-    <div class="page-title">RTA — Data Input</div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 10px;border-radius:11px;background:var(--bg3);border:1px solid var(--border);font-size:11px;color:var(--muted);font-family:var(--sans);">
-        <span style="font-weight:500;color:var(--text);">Last update</span>&nbsp;May 21, 2026
-      </span>
-      <span id="chip-today" style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 10px;border-radius:11px;background:var(--bg3);border:1px solid var(--border);font-size:11px;color:var(--muted);font-family:var(--sans);">
-        <span style="font-weight:500;color:var(--text);">Today</span>&nbsp;
-      </span>
-    </div>
+  <div style="display:flex;align-items:center;gap:0;">
+    <!-- Logo -->
+    <div style="width:40px;height:40px;flex-shrink:0;"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 0H39.9874V39.9874H0V0Z" fill="#E60D2E"/><path fill-rule="evenodd" clip-rule="evenodd" d="M17.5626 26.0394C17.5626 27.827 18.5323 28.2043 19.3058 28.2043V29.3721H12V28.2043C12.7427 28.2043 13.7415 27.827 13.7415 26.0394V12.3225C13.7415 10.5434 12.7717 10.1473 12 10.1473V9H21.0848C26.6849 9 27.9381 11.9742 27.9381 14.2894C27.9279 14.8921 27.8152 15.4948 27.5898 16.0599C27.3628 16.6148 27.0435 17.1338 26.6389 17.5846C26.2342 18.0268 25.7442 18.4041 25.2081 18.6773C24.6617 18.9505 24.0778 19.1195 23.4751 19.1861C26.2803 19.3551 27.8528 26.4901 29.8589 29.1178C29.9591 29.2498 30.0752 29.3721 30.2072 29.4848C30.3381 29.5975 30.4758 29.6977 30.6204 29.7853C30.7718 29.8673 30.9289 29.9367 31.0916 29.9936C31.2544 30.0437 31.4206 30.0779 31.5902 30.0961H31.6755V31.2724H29.5192C29.1521 31.2827 28.785 31.2537 28.4265 31.1888C28.0696 31.1136 27.7213 31.0095 27.3815 30.8678C27.052 30.7175 26.7328 30.5383 26.4323 30.3231C26.1403 30.1063 25.8671 29.8604 25.6213 29.589C23.2498 26.3399 22.3466 19.6283 19.456 19.4217H19.2016V18.1975H19.4185C22.9851 18.1975 23.6168 16.2102 23.6168 14.6001C23.6168 12.7186 22.9476 11.0044 19.6814 11.0044H17.5626V26.0394Z" fill="white"/></svg></div>
+    <div class="page-title" style="margin-left:16px;">Data Input</div>
   </div>
-  <div class="save-row">
-    <button class="btn-discard" id="btn-discard" onclick="discardAll()">Discard</button>
-    <button class="btn-save"    id="btn-save"    onclick="openModal()">Save changes</button>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <span style="font-size:10px;color:#dfe3ec;font-family:var(--sans);opacity:0.7;">Last update May 21, 2026 (3 days ago)</span>
   </div>
 </div>
 
@@ -347,19 +381,13 @@ tr:hover .chev { color:var(--faint); }
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <div class="sb-label">Region</div>
-    <div class="tf-wrap" style="padding-top:0;">
-      <div class="tf-field">
-        <div style="position:relative;">
-          <span class="material-icons" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--muted);pointer-events:none;">location_on</span>
-          <select class="tf-select" id="region-select" style="padding-left:26px;font-weight:600;color:var(--text);">
-            <option value="isal" selected>ISAL</option>
-            <option value="qc">QC</option>
-          </select>
-        </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 12px;height:56px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:4px;">
+        <span class="material-icons" style="font-size:16px;color:#141b24;">location_on</span>
+        <span style="font-size:14px;font-weight:600;color:#141b24;font-family:var(--sans);letter-spacing:0.02em;">ISAL</span>
       </div>
+      <span class="material-icons" style="font-size:16px;color:#141b24;cursor:pointer;">expand_more</span>
     </div>
-    <div class="sb-divider"></div>
     <div class="sb-label">Material</div>
     <button class="mat-btn active" id="tab-anodes"   onclick="selMat('anodes')"><span class="mat-badge anodes">C</span>Anodes<span class="chg-pill" id="pill-mat-anodes"></span></button>
     <button class="mat-btn"        id="tab-alumina"  onclick="selMat('alumina')"><span class="mat-badge alumina">Al</span>Alumina<span class="chg-pill" id="pill-mat-alumina"></span></button>
@@ -375,32 +403,39 @@ tr:hover .chev { color:var(--faint); }
   <div class="content">
 
   <!-- Fixed toolbar -->
-  <div style="position:fixed;top:var(--chrome);left:calc(var(--sidebar-w) + 16px + 28px);right:28px;z-index:99;padding:10px 0;">
-    <div class="content-toolbar" style="background:#fff;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08),0 0 0 1px var(--border);padding:10px 16px;">
+  <div style="position:fixed;top:var(--chrome);left:var(--sidebar-w);right:0;z-index:99;background:var(--bg);border-bottom:1px solid var(--border);height:var(--toolbar-h);display:flex;align-items:center;padding:0 28px;gap:16px;">
     <!-- Search -->
     <div style="position:relative;flex-shrink:0;">
-      <span class="material-icons" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--faint);pointer-events:none;">search</span>
-      <input type="text" placeholder="Search tables…" style="height:30px;width:200px;border:1px solid var(--border);border-radius:4px;background:var(--bg);font-size:12px;font-family:var(--sans);color:var(--text);padding:0 10px 0 28px;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"/>
+      <input type="text" placeholder="Search" style="height:32px;width:240px;border:1px solid var(--border);border-radius:4px;background:#fff;font-size:12px;font-family:var(--sans);color:var(--text);padding:0 32px 0 12px;outline:none;" onfocus="this.style.borderColor='var(--text)'" onblur="this.style.borderColor='var(--border)'"/>
+      <span class="material-icons" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:15px;color:#93969a;pointer-events:none;">search</span>
     </div>
     <!-- Divider -->
     <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;"></div>
     <!-- Date from/to -->
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-      <span style="font-size:11px;color:var(--muted);font-family:var(--sans);">From</span>
-      <input type="date" id="toolbar-from" value="2026-05-21" style="height:30px;border:1px solid var(--border);border-radius:4px;background:var(--bg);font-size:12px;font-family:var(--sans);color:var(--text);padding:0 8px;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"/>
-      <span style="font-size:11px;color:var(--muted);font-family:var(--sans);">To</span>
-      <input type="date" id="toolbar-to"   value="2026-06-18" style="height:30px;border:1px solid var(--border);border-radius:4px;background:var(--bg);font-size:12px;font-family:var(--sans);color:var(--text);padding:0 8px;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"/>
+      <span style="font-size:12px;color:#62666c;font-family:var(--sans);">From</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;height:32px;width:130px;border:1px solid var(--border);border-radius:4px;background:#fff;padding:0 8px;gap:4px;">
+        <input type="date" id="toolbar-from" value="2026-05-21" style="border:none;background:transparent;font-size:12px;font-family:var(--sans);color:var(--text);outline:none;flex:1;min-width:0;"/>
+      </div>
+      <span style="font-size:12px;color:#62666c;font-family:var(--sans);">to</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;height:32px;width:130px;border:1px solid var(--border);border-radius:4px;background:#fff;padding:0 8px;gap:4px;">
+        <input type="date" id="toolbar-to" value="2026-06-18" style="border:none;background:transparent;font-size:12px;font-family:var(--sans);color:var(--text);outline:none;flex:1;min-width:0;"/>
+      </div>
     </div>
     <!-- Divider -->
     <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;"></div>
     <!-- Table view toggle -->
-    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-      <span style="font-size:11px;color:var(--muted);font-family:var(--sans);">View</span>
-      <div style="display:flex;background:#e8e9eb;border-radius:6px;padding:3px;gap:2px;">
-        <button id="tb-vt-detail"  onclick="setTableView('detail')"  style="height:24px;padding:0 12px;border:none;border-radius:4px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.12);color:#1a1a1a;font-size:11px;font-weight:500;font-family:var(--sans);cursor:pointer;">Single table</button>
-        <button id="tb-vt-summary" onclick="setTableView('summary')" style="height:24px;padding:0 12px;border:none;border-radius:4px;background:transparent;box-shadow:none;color:#6b7280;font-size:11px;font-weight:400;font-family:var(--sans);cursor:pointer;">Multi table</button>
+    <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
+      <span style="font-size:12px;color:#62666c;font-family:var(--sans);">View</span>
+      <div style="display:flex;background:#e9e9e9;border-radius:6px;padding:2px;gap:2px;height:36px;align-items:center;">
+        <button id="tb-vt-detail"  onclick="setTableView('detail')"  style="height:32px;padding:0 16px;border:none;border-radius:4px;background:#fff;color:#141b24;font-size:12px;font-weight:400;font-family:var(--sans);cursor:pointer;letter-spacing:0.02em;">Single table</button>
+        <button id="tb-vt-summary" onclick="setTableView('summary')" style="height:32px;padding:0 16px;border:none;border-radius:4px;background:transparent;color:#62666c;font-size:12px;font-weight:400;font-family:var(--sans);cursor:pointer;letter-spacing:0.02em;">Multi table</button>
       </div>
     </div>
+    <!-- Save/Discard -->
+    <div class="save-row">
+      <button class="btn-discard" id="btn-discard" onclick="discardAll()">Discard</button>
+      <button class="btn-save"    id="btn-save"    onclick="openModal()">Save changes</button>
     </div>
   </div>
 
@@ -410,7 +445,7 @@ tr:hover .chev { color:var(--faint); }
 
     <!-- Inventory -->
     <div class="section" id="s-anodes-inventory">
-      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Inventory</span><span class="chg-pill" id="pill-hdr-anodes-inventory"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Anodes Schedule file &nbsp;<span class="sn-icon">place</span> Rotterdam + Straumsvik &nbsp;<span class="sn-icon">schedule</span> weekly</span><span class="score-badge">Score 4 · File-based</span><button class="add-btn" onclick="addStaticRow('inventory')"><span class="material-icons">add</span>New inventory</button></div></div>
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Inventory</span><span class="chg-pill" id="pill-hdr-anodes-inventory"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Anodes Schedule file &nbsp;<span class="sn-icon">place</span> Rotterdam + Straumsvik &nbsp;<span class="sn-icon">schedule</span> weekly</span><span class="score-badge">Score 4 · File-based</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="hdr-sep"></span><button class="add-btn" onclick="addStaticRow('inventory')"><span class="material-icons">add</span>New inventory</button></div></div>
       <div class="tw"><table>
         <thead><tr><th>Week</th><th>Date</th><th>Site</th><th>Stock (anodes)</th><th>Stock (mt)</th><th>DOS</th><th>Notes</th></tr></thead>
         <tbody id="tbody-anodes-inventory"></tbody>
@@ -419,7 +454,7 @@ tr:hover .chev { color:var(--faint); }
 
     <!-- Consumption -->
     <div class="section" id="s-anodes-consumption">
-      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Consumption</span><span class="chg-pill" id="pill-hdr-anodes-consumption"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Anodes Schedule file &nbsp;<span class="sn-icon">schedule</span> weekly</span><span class="score-badge">Score 4 · File-based</span><button class="add-btn" onclick="addStaticRow('consumption')"><span class="material-icons">add</span>New consumption</button></div></div>
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Consumption</span><span class="chg-pill" id="pill-hdr-anodes-consumption"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Anodes Schedule file &nbsp;<span class="sn-icon">schedule</span> weekly</span><span class="score-badge">Score 4 · File-based</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="hdr-sep"></span><button class="add-btn" onclick="addStaticRow('consumption')"><span class="material-icons">add</span>New consumption</button></div></div>
       <div class="tw"><table>
         <thead>
           <tr><th>Week</th><th>Date</th><th class="grp" colspan="2">Code 76</th><th class="grp" colspan="3">Code 75</th><th>Total (anodes)</th></tr>
@@ -431,7 +466,7 @@ tr:hover .chev { color:var(--faint); }
 
     <!-- Material arrivals -->
     <div class="section" id="s-anodes-arrivals">
-      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Material arrivals</span><span class="chg-pill" id="pill-hdr-anodes-arrivals"></span></div><div style="display:flex;align-items:center;gap:8px;"><span class="source-note"><span class="sn-icon">description</span> Anodes Schedule file &nbsp;<span class="sn-icon">place</span> qty per supplier &nbsp;<span class="sn-icon">schedule</span> weekly</span><span class="score-badge">Score 4 · File-based</span><button class="add-btn" onclick="addRow()"><span class="material-icons">add</span>Add vessel</button></div></div>
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Material arrivals</span><span class="chg-pill" id="pill-hdr-anodes-arrivals"></span></div><div style="display:flex;align-items:center;gap:8px;"><span class="source-note"><span class="sn-icon">description</span> Anodes Schedule file &nbsp;<span class="sn-icon">place</span> qty per supplier &nbsp;<span class="sn-icon">schedule</span> weekly</span><span class="score-badge">Score 4 · File-based</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="hdr-sep"></span><button class="add-btn" onclick="addRow()"><span class="material-icons">add</span>Add vessel</button></div></div>
       <div class="tw"><table id="tbl-arrivals">
         <thead>
           <tr><th>Week</th><th>ETA ISAL</th><th>Supplier</th><th class="grp" colspan="2">Code 76</th><th class="grp" colspan="3">Code 75</th><th>Total</th><th>Status</th><th>Notes</th></tr>
@@ -447,7 +482,7 @@ tr:hover .chev { color:var(--faint); }
 
     <!-- Costs -->
     <div class="section" id="s-anodes-costs">
-      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Costs</span><span class="chg-pill" id="pill-hdr-anodes-costs"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Anode cost file, ISAL Anode costs 2021–2026 &nbsp;<span class="sn-icon">info</span> SME input may be needed</span><span class="score-badge">Score 3 · Accessible but unstructured</span><button class="add-btn" onclick="addStaticRow('costs')"><span class="material-icons">add</span>New cost entry</button></div></div>
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Costs</span><span class="chg-pill" id="pill-hdr-anodes-costs"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Anode cost file, ISAL Anode costs 2021–2026 &nbsp;<span class="sn-icon">info</span> SME input may be needed</span><span class="score-badge">Score 3 · Accessible but unstructured</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="hdr-sep"></span><button class="add-btn" onclick="addStaticRow('costs')"><span class="material-icons">add</span>New cost entry</button></div></div>
       <div class="tw"><table id="tbl-costs-anodes">
         <thead><tr><th>Supplier</th><th>Unit cost ($/anode)</th><th>Freight ($/mt)</th><th>Demurrage ($/day)</th><th>Valid from</th><th>Valid to</th><th>Notes</th></tr></thead>
         <tbody id="tbody-costs-anodes"></tbody>
@@ -456,7 +491,7 @@ tr:hover .chev { color:var(--faint); }
 
     <!-- Ship lead times -->
     <div class="section" id="s-anodes-leadtimes">
-      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Ship lead times</span><span class="chg-pill" id="pill-hdr-anodes-leadtimes"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">directions_boat</span> Vessel Schedule and Transit Times &nbsp;<span class="sn-icon">schedule</span> 2023–2026</span><span class="score-badge">Score 4 · File-based</span><button class="add-btn" onclick="addStaticRow('leadtimes')"><span class="material-icons">add</span>New lead time</button></div></div>
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Ship lead times</span><span class="chg-pill" id="pill-hdr-anodes-leadtimes"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">directions_boat</span> Vessel Schedule and Transit Times &nbsp;<span class="sn-icon">schedule</span> 2023–2026</span><span class="score-badge">Score 4 · File-based</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="hdr-sep"></span><button class="add-btn" onclick="addStaticRow('leadtimes')"><span class="material-icons">add</span>New lead time</button></div></div>
       <div class="tw"><table>
         <thead><tr><th>Supplier</th><th>Origin port</th><th>Avg lead time</th><th>Min</th><th>Max</th><th>σ</th><th>Shipments</th></tr></thead>
         <tbody>
@@ -470,7 +505,7 @@ tr:hover .chev { color:var(--faint); }
 
     <!-- Material transfers -->
     <div class="section" id="s-anodes-transfers">
-      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Material transfers</span><span class="chg-pill" id="pill-hdr-anodes-transfers"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Charter data analysis &nbsp;<span class="sn-icon">schedule</span> since Nov 2023</span><span class="score-badge">Score 4 · File-based</span><button class="add-btn" onclick="addStaticRow('transfers')"><span class="material-icons">add</span>New transfer</button></div></div>
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Material transfers</span><span class="chg-pill" id="pill-hdr-anodes-transfers"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Charter data analysis &nbsp;<span class="sn-icon">schedule</span> since Nov 2023</span><span class="score-badge">Score 4 · File-based</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="hdr-sep"></span><button class="add-btn" onclick="addStaticRow('transfers')"><span class="material-icons">add</span>New transfer</button></div></div>
       <div class="tw"><table>
         <thead><tr><th>Charter date</th><th>From</th><th>To</th><th>Qty (anodes)</th><th>Qty (mt)</th><th>Notes</th></tr></thead>
         <tbody>
@@ -483,7 +518,7 @@ tr:hover .chev { color:var(--faint); }
 
     <!-- Constraints -->
     <div class="section" id="s-anodes-constraints">
-      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Constraints</span><span class="chg-pill" id="pill-hdr-anodes-constraints"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Charter capacity — source not confirmed (ask Sarah)</span><span class="score-badge">Score 2 · Source identified</span><button class="add-btn" onclick="addStaticRow('constraints')"><span class="material-icons">add</span>New constraint</button></div></div>
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:16px;"><span class="section-title">Constraints</span><span class="chg-pill" id="pill-hdr-anodes-constraints"></span></div><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Charter capacity — source not confirmed (ask Sarah)</span><span class="score-badge">Score 2 · Source identified</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="hdr-sep"></span><button class="add-btn" onclick="addStaticRow('constraints')"><span class="material-icons">add</span>New constraint</button></div></div>
       <div class="tw"><table>
         <thead><tr><th>Constraint</th><th>Type</th><th>Value</th><th>Unit</th><th>Source</th><th>Confidence</th></tr></thead>
         <tbody>
@@ -499,7 +534,7 @@ tr:hover .chev { color:var(--faint); }
   <!-- ══ ALUMINA ══ -->
   <div id="mat-alumina" style="display:none;">
     <div class="section" id="s-alumina-inventory">
-      <div class="section-hdr"><span class="section-title">Inventory</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> AluminaCommunication file &nbsp;<span class="sn-icon">schedule</span> daily &nbsp;<span class="sn-icon">place</span> per silo A&amp;C</span><span class="score-badge">Score 4 · File-based</span></div></div>
+      <div class="section-hdr"><span class="section-title">Inventory</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> AluminaCommunication file &nbsp;<span class="sn-icon">schedule</span> daily &nbsp;<span class="sn-icon">place</span> per silo A&amp;C</span><span class="score-badge">Score 4 · File-based</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
       <div class="tw"><table><thead><tr><th>Date</th><th>Silo</th><th>Stock (mt)</th><th>DOS</th><th>Notes</th></tr></thead><tbody>
         <tr><td class="mono">May 21</td><td>Silo A</td><td class="mono">21,400</td><td class="mono">19d</td><td></td></tr>
         <tr><td class="mono">May 21</td><td>Silo C</td><td class="mono">20,200</td><td class="mono">18d</td><td></td></tr>
@@ -507,7 +542,7 @@ tr:hover .chev { color:var(--faint); }
       </tbody></table></div>
     </div>
     <div class="section" id="s-alumina-consumption">
-      <div class="section-hdr"><span class="section-title">Consumption</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> AluminaCommunication file &nbsp;<span class="sn-icon">schedule</span> daily &nbsp;<span class="sn-icon">place</span> per silo</span><span class="score-badge">Score 4 · File-based</span></div></div>
+      <div class="section-hdr"><span class="section-title">Consumption</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> AluminaCommunication file &nbsp;<span class="sn-icon">schedule</span> daily &nbsp;<span class="sn-icon">place</span> per silo</span><span class="score-badge">Score 4 · File-based</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
       <div class="tw"><table><thead><tr><th>Date</th><th>Silo</th><th>Consumption (mt)</th><th>Notes</th></tr></thead><tbody>
         <tr><td class="mono">May 21</td><td>Silo A</td><td class="mono">580</td><td></td></tr>
         <tr><td class="mono">May 21</td><td>Silo C</td><td class="mono">520</td><td></td></tr>
@@ -515,7 +550,7 @@ tr:hover .chev { color:var(--faint); }
       </tbody></table></div>
     </div>
     <div class="section" id="s-alumina-arrivals">
-      <div class="section-hdr"><div style="display:flex;align-items:center;gap:24px;"><span class="section-title">Material arrivals</span><button class="add-btn" ><span class="material-icons">add</span>Add vessel</button></div><div style="display:flex;align-items:center;gap:8px;"><span class="source-note"><span class="sn-icon">description</span> AluminaCommunication file &nbsp;<span class="sn-icon">schedule</span> daily &nbsp;<span class="sn-icon">place</span> single supplier</span><span class="score-badge">Score 4 · File-based</span></div></div>
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:24px;"><span class="section-title">Material arrivals</span><button class="add-btn" ><span class="material-icons">add</span>Add vessel</button></div><div style="display:flex;align-items:center;gap:8px;"><span class="source-note"><span class="sn-icon">description</span> AluminaCommunication file &nbsp;<span class="sn-icon">schedule</span> daily &nbsp;<span class="sn-icon">place</span> single supplier</span><span class="score-badge">Score 4 · File-based</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
       <div class="tw"><table><thead><tr><th>ETA ISAL</th><th>Supplier</th><th>Qty (mt)</th><th>Status</th><th>Notes</th></tr></thead><tbody>
         <tr><td class="mono">Jun 3</td><td>Alunorte</td><td class="mono">35,000</td><td><span class="sb confirmed"><span class="sd"></span>Confirmed</span></td><td></td></tr>
         <tr><td class="mono">Jun 24</td><td>Alunorte</td><td class="mono">37,000</td><td><span class="sb ordered"><span class="sd"></span>Ordered</span></td><td></td></tr>
@@ -524,23 +559,23 @@ tr:hover .chev { color:var(--faint); }
       <div class="rec-toggle" onclick="toggleRec(this)"><span class="material-icons">expand_more</span><span>Show 4 received deliveries</span></div>
     </div>
     <div class="section" id="s-alumina-costs">
-      <div class="section-hdr"><span class="section-title">Costs</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> RM cost ISAL &nbsp;<span class="sn-icon">info</span> SME input may be needed</span><span class="score-badge">Score 3 · Accessible but unstructured</span></div></div>
+      <div class="section-hdr"><span class="section-title">Costs</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> RM cost ISAL &nbsp;<span class="sn-icon">info</span> SME input may be needed</span><span class="score-badge">Score 3 · Accessible but unstructured</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
       <div class="tw"><table><thead><tr><th>Supplier</th><th>Unit cost ($/mt)</th><th>Freight ($/mt)</th><th>Demurrage ($/day)</th><th>Valid from</th><th>Notes</th></tr></thead><tbody>
         <tr><td>Alunorte</td><td class="mono">$380</td><td class="mono">$28</td><td class="mono muted">—</td><td class="mono">Jan 2026</td><td class="muted">SME to confirm demurrage</td></tr>
       </tbody></table></div>
     </div>
     <div class="section" id="s-alumina-leadtimes">
-      <div class="section-hdr"><span class="section-title">Ship lead times</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">directions_boat</span> ALUMINA SHIPMENTS spreadsheet &nbsp;<span class="sn-icon">schedule</span> 2024–2025</span><span class="score-badge">Score 4 · File-based</span></div></div>
+      <div class="section-hdr"><span class="section-title">Ship lead times</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">directions_boat</span> ALUMINA SHIPMENTS spreadsheet &nbsp;<span class="sn-icon">schedule</span> 2024–2025</span><span class="score-badge">Score 4 · File-based</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
       <div class="tw"><table><thead><tr><th>Supplier</th><th>Origin</th><th>Avg lead time</th><th>Unloading time</th><th>Min</th><th>Max</th><th>Shipments</th></tr></thead><tbody>
         <tr><td>Alunorte</td><td class="muted">Barcarena, Brazil</td><td class="mono">17d</td><td class="mono">2d</td><td class="mono">14d</td><td class="mono">22d</td><td class="mono muted">18</td></tr>
       </tbody></table></div>
     </div>
     <div class="section" id="s-alumina-transfers">
-      <div class="section-hdr"><span class="section-title">Material transfers</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">place</span> Alumina arrives directly at Straumsvik — no transfers</span><span class="score-badge">N/A</span></div></div>
+      <div class="section-hdr"><span class="section-title">Material transfers</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">place</span> Alumina arrives directly at Straumsvik — no transfers</span><span class="score-badge">N/A</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
       <div class="na-msg">Not applicable — Alumina is shipped directly from Brazil to Straumsvik.</div>
     </div>
     <div class="section" id="s-alumina-constraints">
-      <div class="section-hdr"><span class="section-title">Constraints</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Illustrated diagrams and local files &nbsp;<span class="sn-icon">place</span> storage capacity</span><span class="score-badge">Score 4 · File-based</span></div></div>
+      <div class="section-hdr"><span class="section-title">Constraints</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">description</span> Illustrated diagrams and local files &nbsp;<span class="sn-icon">place</span> storage capacity</span><span class="score-badge">Score 4 · File-based</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
       <div class="tw"><table><thead><tr><th>Constraint</th><th>Type</th><th>Value</th><th>Unit</th><th>Source</th></tr></thead><tbody>
         <tr><td>Silo A capacity</td><td>Max</td><td class="mono">31,250</td><td>mt</td><td class="muted">Illustrated diagram</td></tr>
         <tr><td>Silo C capacity</td><td>Max</td><td class="mono">31,250</td><td>mt</td><td class="muted">Illustrated diagram</td></tr>
@@ -551,20 +586,20 @@ tr:hover .chev { color:var(--faint); }
 
   <!-- ══ FLUORIDE ══ -->
   <div id="mat-fluoride" style="display:none;">
-    <div class="section" id="s-fluoride-inventory"><div class="section-hdr"><span class="section-title">Inventory</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span></div></div><div class="tw"><table><thead><tr><th>Date</th><th>Site</th><th>Stock (mt)</th><th>DOS</th><th>Notes</th></tr></thead><tbody><tr><td class="mono">May 21</td><td>Straumsvik</td><td class="mono">572</td><td class="mono">52d</td><td></td></tr><tr><td class="mono">May 20</td><td>Straumsvik</td><td class="mono">583</td><td class="mono">53d</td><td></td></tr></tbody></table></div></div>
-    <div class="section" id="s-fluoride-consumption"><div class="section-hdr"><span class="section-title">Consumption</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span></div></div><div class="tw"><table><thead><tr><th>Date</th><th>Consumption (mt)</th><th>Notes</th></tr></thead><tbody><tr><td class="mono">May 21</td><td class="mono">11.2</td><td class="muted">Slightly above avg</td></tr><tr><td class="mono">May 20</td><td class="mono">10.8</td><td></td></tr></tbody></table></div></div>
+    <div class="section" id="s-fluoride-inventory"><div class="section-hdr"><span class="section-title">Inventory</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div><div class="tw"><table><thead><tr><th>Date</th><th>Site</th><th>Stock (mt)</th><th>DOS</th><th>Notes</th></tr></thead><tbody><tr><td class="mono">May 21</td><td>Straumsvik</td><td class="mono">572</td><td class="mono">52d</td><td></td></tr><tr><td class="mono">May 20</td><td>Straumsvik</td><td class="mono">583</td><td class="mono">53d</td><td></td></tr></tbody></table></div></div>
+    <div class="section" id="s-fluoride-consumption"><div class="section-hdr"><span class="section-title">Consumption</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div><div class="tw"><table><thead><tr><th>Date</th><th>Consumption (mt)</th><th>Notes</th></tr></thead><tbody><tr><td class="mono">May 21</td><td class="mono">11.2</td><td class="muted">Slightly above avg</td></tr><tr><td class="mono">May 20</td><td class="mono">10.8</td><td></td></tr></tbody></table></div></div>
     <div class="section" id="s-fluoride-arrivals">
-      <div class="section-hdr"><div style="display:flex;align-items:center;gap:24px;"><span class="section-title">Material arrivals</span><button class="add-btn" ><span class="material-icons">add</span>Add vessel</button></div><div style="display:flex;align-items:center;gap:8px;"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span></div></div>
+      <div class="section-hdr"><div style="display:flex;align-items:center;gap:24px;"><span class="section-title">Material arrivals</span><button class="add-btn" ><span class="material-icons">add</span>Add vessel</button></div><div style="display:flex;align-items:center;gap:8px;"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
       <div class="tw"><table><thead><tr><th>ETA ISAL</th><th>Supplier</th><th>Qty (mt)</th><th>Status</th><th>Notes</th></tr></thead><tbody>
         <tr><td class="mono">Jun 10</td><td>Alufluor</td><td class="mono">200</td><td><span class="sb confirmed"><span class="sd"></span>Confirmed</span></td><td></td></tr>
         <tr><td class="mono">Jun 28</td><td>Elixir</td><td class="mono">180</td><td><span class="sb ordered"><span class="sd"></span>Ordered</span></td><td class="muted">± 14d variability</td></tr>
       </tbody></table></div>
       <div class="rec-toggle" onclick="toggleRec(this)"><span class="material-icons">expand_more</span><span>Show 5 received deliveries</span></div>
     </div>
-    <div class="section" id="s-fluoride-costs"><div class="section-hdr"><span class="section-title">Costs</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span></div></div><div class="tw"><table><thead><tr><th>Supplier</th><th>Unit cost ($/mt)</th><th>Freight ($/mt)</th><th>Valid from</th><th>Notes</th></tr></thead><tbody><tr><td>Alufluor</td><td class="mono muted">—</td><td class="mono muted">—</td><td class="mono">Jan 2026</td><td class="muted">SME input needed</td></tr><tr><td>Elixir</td><td class="mono muted">—</td><td class="mono muted">—</td><td class="mono">Jan 2026</td><td class="muted">SME input needed</td></tr></tbody></table></div></div>
-    <div class="section" id="s-fluoride-leadtimes"><div class="section-hdr"><span class="section-title">Ship lead times</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span></div></div><div class="tw"><table><thead><tr><th>Supplier</th><th>Origin</th><th>Avg lead time</th><th>Min</th><th>Max</th><th>Notes</th></tr></thead><tbody><tr><td>Alufluor</td><td class="muted">Sweden</td><td class="mono">21d</td><td class="mono">18d</td><td class="mono">26d</td><td></td></tr><tr><td>Elixir</td><td class="muted">Serbia</td><td class="mono">42d</td><td class="mono">28d</td><td class="mono">70d</td><td class="muted warn">High variability</td></tr></tbody></table></div></div>
-    <div class="section" id="s-fluoride-transfers"><div class="section-hdr"><span class="section-title">Material transfers</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span></div></div><div class="tw"><table><thead><tr><th>Charter date</th><th>From</th><th>To</th><th>Qty (mt)</th><th>Notes</th></tr></thead><tbody><tr><td class="mono">May 15, 2026</td><td>Rotterdam</td><td>Straumsvik</td><td class="mono">48</td><td></td></tr></tbody></table></div></div>
-    <div class="section" id="s-fluoride-constraints"><div class="section-hdr"><span class="section-title">Constraints</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span></div></div><div class="tw"><table><thead><tr><th>Constraint</th><th>Type</th><th>Value</th><th>Unit</th><th>Notes</th></tr></thead><tbody><tr><td>Storage — Straumsvik</td><td>Max</td><td class="mono warn">TBC</td><td>mt</td><td class="muted">Source to be confirmed</td></tr></tbody></table></div></div>
+    <div class="section" id="s-fluoride-costs"><div class="section-hdr"><span class="section-title">Costs</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div><div class="tw"><table><thead><tr><th>Supplier</th><th>Unit cost ($/mt)</th><th>Freight ($/mt)</th><th>Valid from</th><th>Notes</th></tr></thead><tbody><tr><td>Alufluor</td><td class="mono muted">—</td><td class="mono muted">—</td><td class="mono">Jan 2026</td><td class="muted">SME input needed</td></tr><tr><td>Elixir</td><td class="mono muted">—</td><td class="mono muted">—</td><td class="mono">Jan 2026</td><td class="muted">SME input needed</td></tr></tbody></table></div></div>
+    <div class="section" id="s-fluoride-leadtimes"><div class="section-hdr"><span class="section-title">Ship lead times</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div><div class="tw"><table><thead><tr><th>Supplier</th><th>Origin</th><th>Avg lead time</th><th>Min</th><th>Max</th><th>Notes</th></tr></thead><tbody><tr><td>Alufluor</td><td class="muted">Sweden</td><td class="mono">21d</td><td class="mono">18d</td><td class="mono">26d</td><td></td></tr><tr><td>Elixir</td><td class="muted">Serbia</td><td class="mono">42d</td><td class="mono">28d</td><td class="mono">70d</td><td class="muted warn">High variability</td></tr></tbody></table></div></div>
+    <div class="section" id="s-fluoride-transfers"><div class="section-hdr"><span class="section-title">Material transfers</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div><div class="tw"><table><thead><tr><th>Charter date</th><th>From</th><th>To</th><th>Qty (mt)</th><th>Notes</th></tr></thead><tbody><tr><td class="mono">May 15, 2026</td><td>Rotterdam</td><td>Straumsvik</td><td class="mono">48</td><td></td></tr></tbody></table></div></div>
+    <div class="section" id="s-fluoride-constraints"><div class="section-hdr"><span class="section-title">Constraints</span><div class="hdr-right"><span class="source-note"><span class="sn-icon">info</span> Placeholder data</span><span class="score-badge">Score 3 · Stub</span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Copy table" onclick="copyTable(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span><span class="hdr-sep"></span><span class="copy-icon" data-tip="Download table" onclick="downloadTable(this)"><svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 L11 0 L17 6 L17 22 L3 22 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 0 L11 6 L17 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 14 L10 17 L13 14 M10 11 L10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div><div class="tw"><table><thead><tr><th>Constraint</th><th>Type</th><th>Value</th><th>Unit</th><th>Notes</th></tr></thead><tbody><tr><td>Storage — Straumsvik</td><td>Max</td><td class="mono warn">TBC</td><td>mt</td><td class="muted">Source to be confirmed</td></tr></tbody></table></div></div>
   </div><!-- /fluoride -->
 
 </div><!-- /content -->
@@ -626,16 +661,16 @@ var _rows = (function() {
 
 // ── Inventory data (anodes, weekly) ───────────────────────────────────
 var _inventory = [
-  { date:'2026-05-19', dateLabel:'May 19', week:'W21', site:'Straumsvik', stock:8400, mt:'138.6t', dos:'24d', dosClass:'warn', notes:'' },
-  { date:'2026-05-19', dateLabel:'May 19', week:'W21', site:'Rotterdam',  stock:3200, mt:'52.8t',  dos:'—',   dosClass:'', notes:'' },
-  { date:'2026-05-12', dateLabel:'May 12', week:'W20', site:'Straumsvik', stock:9100, mt:'150.2t', dos:'26d', dosClass:'', notes:'' },
-  { date:'2026-05-12', dateLabel:'May 12', week:'W20', site:'Rotterdam',  stock:3800, mt:'62.7t',  dos:'—',   dosClass:'', notes:'' },
-  { date:'2026-05-05', dateLabel:'May 5',  week:'W19', site:'Straumsvik', stock:9800, mt:'161.7t', dos:'28d', dosClass:'', notes:'' },
-  { date:'2026-05-05', dateLabel:'May 5',  week:'W19', site:'Rotterdam',  stock:4100, mt:'67.7t',  dos:'—',   dosClass:'', notes:'' },
-  { date:'2026-04-28', dateLabel:'Apr 28', week:'W18', site:'Straumsvik', stock:8600, mt:'141.9t', dos:'25d', dosClass:'', notes:'' },
-  { date:'2026-04-28', dateLabel:'Apr 28', week:'W18', site:'Rotterdam',  stock:3900, mt:'64.4t',  dos:'—',   dosClass:'', notes:'' },
-  { date:'2026-04-21', dateLabel:'Apr 21', week:'W17', site:'Straumsvik', stock:7800, mt:'128.7t', dos:'22d', dosClass:'warn', notes:'' },
-  { date:'2026-04-21', dateLabel:'Apr 21', week:'W17', site:'Rotterdam',  stock:3600, mt:'59.4t',  dos:'—',   dosClass:'', notes:'' },
+  { date:'2026-05-19', dateLabel:'May 19', week:'W21', site:'Straumsvik', stock:8400, mt:'138.6', dos:'24d', dosClass:'warn', notes:'' },
+  { date:'2026-05-19', dateLabel:'May 19', week:'W21', site:'Rotterdam',  stock:3200, mt:'52.8',  dos:'—',   dosClass:'', notes:'' },
+  { date:'2026-05-12', dateLabel:'May 12', week:'W20', site:'Straumsvik', stock:9100, mt:'150.2', dos:'26d', dosClass:'', notes:'' },
+  { date:'2026-05-12', dateLabel:'May 12', week:'W20', site:'Rotterdam',  stock:3800, mt:'62.7',  dos:'—',   dosClass:'', notes:'' },
+  { date:'2026-05-05', dateLabel:'May 5',  week:'W19', site:'Straumsvik', stock:9800, mt:'161.7', dos:'28d', dosClass:'', notes:'' },
+  { date:'2026-05-05', dateLabel:'May 5',  week:'W19', site:'Rotterdam',  stock:4100, mt:'67.7',  dos:'—',   dosClass:'', notes:'' },
+  { date:'2026-04-28', dateLabel:'Apr 28', week:'W18', site:'Straumsvik', stock:8600, mt:'141.9', dos:'25d', dosClass:'', notes:'' },
+  { date:'2026-04-28', dateLabel:'Apr 28', week:'W18', site:'Rotterdam',  stock:3900, mt:'64.4',  dos:'—',   dosClass:'', notes:'' },
+  { date:'2026-04-21', dateLabel:'Apr 21', week:'W17', site:'Straumsvik', stock:7800, mt:'128.7', dos:'22d', dosClass:'warn', notes:'' },
+  { date:'2026-04-21', dateLabel:'Apr 21', week:'W17', site:'Rotterdam',  stock:3600, mt:'59.4',  dos:'—',   dosClass:'', notes:'' },
 ];
 
 // ── Consumption data (anodes, weekly) ─────────────────────────────────
@@ -728,11 +763,21 @@ function setTableView(mode) {
   // Sync both sidebar and toolbar toggles
   ['vt-summary','tb-vt-summary'].forEach(function(id) {
     var el = document.getElementById(id);
-    if (el) { el.style.background = mode === 'summary' ? '#fff' : 'transparent'; el.style.boxShadow = mode === 'summary' ? '0 1px 3px rgba(0,0,0,0.12)' : 'none'; el.style.color = mode === 'summary' ? '#1a1a1a' : '#6b7280'; el.style.fontWeight = mode === 'summary' ? '500' : '400'; }
+    if (el) { el.style.background = mode === 'summary' ? '#fff' : 'transparent'; el.style.color = mode === 'summary' ? '#141b24' : '#62666c'; }
   });
   ['vt-detail','tb-vt-detail'].forEach(function(id) {
     var el = document.getElementById(id);
-    if (el) { el.style.background = mode === 'detail' ? '#fff' : 'transparent'; el.style.boxShadow = mode === 'detail' ? '0 1px 3px rgba(0,0,0,0.12)' : 'none'; el.style.color = mode === 'detail' ? '#1a1a1a' : '#6b7280'; el.style.fontWeight = mode === 'detail' ? '500' : '400'; }
+    if (el) { el.style.background = mode === 'detail' ? '#fff' : 'transparent'; el.style.color = mode === 'detail' ? '#141b24' : '#62666c'; }
+  });
+
+  // Toggle chevron and collapsibility
+  var isDetail = mode === 'detail';
+  document.querySelectorAll('.sec-chevron').forEach(function(ch) {
+    ch.style.display = isDetail ? 'none' : '';
+  });
+  document.querySelectorAll('.section-hdr').forEach(function(hdr) {
+    hdr.style.cursor = isDetail ? 'default' : 'pointer';
+    if (isDetail) hdr.closest('.section') && hdr.closest('.section').classList.remove('collapsed');
   });
 
   var hz = document.getElementById('horizon-toggle');
@@ -806,7 +851,279 @@ function showAllSections() {
   matEl.querySelectorAll('.section').forEach(function(s){ s.style.display = ''; });
 }
 
-// ── Add row (static HTML tables) ─────────────────────────────────────
+// ── Empty hint row ───────────────────────────────────────────────────
+// ── Static table cell editing ─────────────────────────────────────────
+var _dropdownCols = {
+  site:        ['Straumsvik', 'Rotterdam'],
+  supplier:    ['Wanfang', 'Sunstone', 'MZAS', 'Aluchemie', 'Alunorte'],
+  status:      ['Ordered', 'Confirmed', 'Cancelled'],
+  'origin port': ['Tianjin', 'Qingdao', 'Antwerp'],
+  from:        ['Straumsvik', 'Rotterdam'],
+  to:          ['Straumsvik', 'Rotterdam']
+};
+
+var _numberIcon = 'pin';
+var _dateIcon   = 'calendar_today';
+var _textIcon   = 'edit';
+var _ddIcon     = 'expand_more';
+
+function inferCellType(th, td) {
+  var header = th ? th.textContent.trim().toLowerCase() : '';
+  // Check dropdown by header name
+  if (_dropdownCols[header]) return { type:'dd', options:_dropdownCols[header] };
+  // Check number: content is mostly numeric/currency/units
+  var txt = td.textContent.trim().replace(/[$,]/g,'');
+  if (/^[\d.]+[a-z%]*$/.test(txt) || /^~?[\d,]+$/.test(txt)) return { type:'num' };
+  // Check date patterns
+  if (/^\d{4}-\d{2}-\d{2}$/.test(txt) || /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/.test(txt)) return { type:'date' };
+  return { type:'text' };
+}
+
+function makeStaticTablesEditable() {
+  var staticTables = document.querySelectorAll('.section table');
+  staticTables.forEach(function(table) {
+    var tbody = table.querySelector('tbody');
+    if (!tbody) return;
+
+    var theadRows2 = Array.prototype.slice.call(table.querySelectorAll('thead tr'));
+    var headers = Array.prototype.slice.call(theadRows2[theadRows2.length - 1].querySelectorAll('th'));
+    var rows = tbody.querySelectorAll('tr:not(.empty-row)');
+    rows.forEach(function(tr) {
+      Array.prototype.slice.call(tr.cells).forEach(function(td, i) {
+        // Skip cells already wired (have contenteditable, select, or structural badges)
+        if (td.contentEditable === 'true') return;
+        if (td.querySelector('select')) return;
+        if (td.querySelector('.sb') && !td.querySelector('.sb.ordered, .sb.confirmed, .sb.cancelled')) return;
+        // Skip stepper cells
+        if (td.classList.contains('num')) return;
+        var th = headers[i] || null;
+        var info = inferCellType(th, td);
+        if (info.type === 'dd') {
+          makeCellDropdown(td, info.options);
+        } else {
+          makeCellEditable(td, info.type);
+        }
+      });
+    });
+  });
+}
+
+function makeCellEditable(td, type) {
+  td.classList.add('s-edit');
+  td.contentEditable = 'true';
+  td.setAttribute('spellcheck', 'false');
+  td.addEventListener('input', function() {
+    var tr = td.closest('tr');
+    if (tr) { tr.classList.add('edited'); checkRowCompleteness(tr); }
+  });
+  var icon = document.createElement('span');
+  icon.className = 's-type-icon';
+  icon.textContent = type === 'num' ? _numberIcon : type === 'date' ? _dateIcon : _textIcon;
+  td.appendChild(icon);
+}
+
+function makeCellDropdown(td, options) {
+  td.classList.add('s-edit', 's-dd');
+  td.style.position = 'relative';
+  var current = td.textContent.trim();
+  var sel = document.createElement('select');
+  sel.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:none;background:transparent;';
+  options.forEach(function(opt) {
+    var o = document.createElement('option');
+    o.value = opt; o.textContent = opt;
+    if (opt.toLowerCase() === current.toLowerCase()) o.selected = true;
+    sel.appendChild(o);
+  });
+  sel.addEventListener('change', function() {
+    td.childNodes[0] && td.childNodes[0].nodeType === 3
+      ? td.childNodes[0].textContent = sel.value
+      : td.insertBefore(document.createTextNode(sel.value), td.firstChild);
+  });
+  // Clear text and set from select
+  var textNode = document.createTextNode(current || options[0]);
+  td.innerHTML = '';
+  td.appendChild(textNode);
+  td.appendChild(sel);
+  var icon = document.createElement('span');
+  icon.className = 's-type-icon';
+  icon.textContent = _ddIcon;
+  td.appendChild(icon);
+}
+
+function downloadTable(el) {
+  var hdr = el.closest('.section-hdr');
+  var titleEl = hdr ? hdr.querySelector('.section-title') : null;
+  var title = titleEl ? titleEl.textContent.trim() : 'table';
+  var section = el.closest('.section');
+  var table = section ? section.querySelector('table') : null;
+  if (!table) return;
+
+  // Build CSV from table
+  var rows = [];
+  table.querySelectorAll('thead tr').forEach(function(tr) {
+    rows.push(Array.prototype.map.call(tr.querySelectorAll('th'), function(th){ return '"' + th.textContent.trim().replace(/"/g,'""') + '"'; }).join(','));
+  });
+  table.querySelectorAll('tbody tr:not(.empty-row)').forEach(function(tr) {
+    rows.push(Array.prototype.map.call(tr.cells, function(td){
+      var val = td.querySelector('.cv') ? td.querySelector('.cv').textContent.trim()
+              : td.querySelector('select') ? td.querySelector('select').value
+              : td.textContent.trim();
+      return '"' + val.replace(/"/g,'""') + '"';
+    }).join(','));
+  });
+
+  var csv = rows.join('\n');
+  var blob = new Blob([csv], { type:'text/csv' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = title.toLowerCase().replace(/\s+/g,'-') + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function copyTable(el) {
+  var hdr = el.closest('.section-hdr');
+  var titleEl = hdr ? hdr.querySelector('.section-title') : null;
+  var title = titleEl ? titleEl.textContent.trim() : 'Table';
+  var toast = document.getElementById('copy-toast');
+  toast.textContent = title + ' table copied. You can paste it in XLS.';
+  toast.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 3000);
+}
+
+function appendEmptyRow(tbody, label) {
+  if (!tbody) return;
+  var hint = label ? 'Click to add ' + label.toLowerCase().replace(/^new /, '') : 'Click to add row';
+  var table = tbody.closest('table');
+  var theadRows = Array.prototype.slice.call(table.querySelectorAll('thead tr'));
+  var lastTheadRow = theadRows[theadRows.length - 1];
+  var headerCells = Array.prototype.slice.call(lastTheadRow.querySelectorAll('th'));
+  var tr = document.createElement('tr');
+  tr.className = 'empty-row';
+  tr.style.cursor = 'pointer';
+
+  // Build plain empty cells
+  headerCells.forEach(function(th, i) {
+    var td = document.createElement('td');
+    if (i === 0) td.setAttribute('placeholder', hint);
+    tr.appendChild(td);
+  });
+
+  // Row click — activate all cells
+  tr.addEventListener('click', function(e) {
+    if (tr.classList.contains('active-row')) return;
+    tr.classList.add('active-row');
+    tr.classList.remove('empty-row');
+    tr.style.cursor = 'default';
+
+    headerCells.forEach(function(th, i) {
+      var td = tr.cells[i];
+      td.removeAttribute('placeholder');
+      var header = th.textContent.trim().toLowerCase();
+
+      if (_dropdownCols[header]) {
+        td.classList.add('s-edit', 's-dd');
+        td.style.position = 'relative';
+        var options = _dropdownCols[header];
+        var colLabel = header.charAt(0).toUpperCase() + header.slice(1);
+        var ddLabel = document.createElement('span');
+        ddLabel.style.cssText = 'color:#bbb;font-size:11px;pointer-events:none;';
+        ddLabel.textContent = 'Select ' + colLabel;
+        td.appendChild(ddLabel);
+        var sel = document.createElement('select');
+        sel.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:none;background:transparent;';
+        var defOpt = document.createElement('option');
+        defOpt.value = ''; defOpt.textContent = 'Select ' + colLabel; defOpt.disabled = true; defOpt.selected = true;
+        sel.appendChild(defOpt);
+        options.forEach(function(opt) { var o = document.createElement('option'); o.value = opt; o.textContent = opt; sel.appendChild(o); });
+        sel.addEventListener('change', function() {
+          ddLabel.textContent = sel.value;
+          ddLabel.style.color = '';
+          var ddIcon2 = td.querySelector('.s-type-icon');
+          if (ddIcon2) ddIcon2.style.opacity = '0';
+        });
+        td.appendChild(sel);
+        var icon = document.createElement('span'); icon.className = 's-type-icon'; icon.style.opacity = '1';
+        icon.textContent = _ddIcon;
+        td.appendChild(icon);
+
+      } else if (/\bdate\b|eta|valid from|valid to|charter date/.test(header)) {
+        td.classList.add('s-edit');
+        td.style.position = 'relative';
+        // Show "Select date" text always (not just hover)
+        var dateLabel = document.createElement('span');
+        dateLabel.style.cssText = 'color:#bbb;font-size:11px;pointer-events:none;';
+        dateLabel.textContent = 'Select date';
+        td.appendChild(dateLabel);
+        var inp = document.createElement('input'); inp.type = 'date';
+        inp.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:none;background:transparent;';
+        inp.addEventListener('change', function() {
+          var d = new Date(inp.value + 'T00:00:00');
+          var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          dateLabel.textContent = months[d.getMonth()] + ' ' + d.getDate();
+          dateLabel.style.color = 'var(--text)';
+          dateLabel.style.fontSize = '12px';
+          dateLabel.style.fontFamily = 'var(--mono)';
+          var dIcon2 = td.querySelector('.s-type-icon');
+          if (dIcon2) dIcon2.style.opacity = '0';
+        });
+        td.appendChild(inp);
+        // Clicking td triggers picker
+        td.addEventListener('click', function() { try { inp.showPicker(); } catch(e) { inp.focus(); } });
+        var dIcon = document.createElement('span'); dIcon.className = 's-type-icon'; dIcon.style.opacity = '1';
+        dIcon.textContent = _dateIcon;
+        td.appendChild(dIcon);
+
+      } else if (/qty|stock|mt\b|dos|min|max|avg|σ|cost|freight|demurrage|shipments|value|consumption/.test(header)) {
+        td.classList.add('num', 'mono', 's-edit');
+        td.style.position = 'relative';
+        td.innerHTML = '<div class="steppers"><button class="step" onclick="step(this,1)" tabindex="-1">▲</button><button class="step" onclick="step(this,-1)" tabindex="-1">▼</button></div><span class="cv" contenteditable="true" spellcheck="false">0</span>';
+
+      } else {
+        td.classList.add('s-edit');
+        td.contentEditable = 'true';
+        td.setAttribute('spellcheck', 'false');
+        // Apply mono font for week/period/time columns
+        if (/\bweek\b|period|w\d|week #/.test(header) || i === 0) td.classList.add('mono');
+      }
+    });
+
+    // Focus first plain editable cell
+    var first = Array.prototype.find.call(tr.cells, function(td){ return td.contentEditable === 'true'; });
+    if (first) first.focus();
+
+    // Track edits on new row
+    tr.classList.add('edited');
+    checkRowCompleteness(tr);
+    tr.addEventListener('input', function() { checkRowCompleteness(tr); });
+    tr.addEventListener('change', function() { checkRowCompleteness(tr); });
+
+    // Append fresh empty row below
+    appendEmptyRow(tbody, label);
+  });
+
+  tbody.appendChild(tr);
+}
+
+function focusEmptyRow(tbodyId) {
+  var tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  var emptyRow = tbody.querySelector('tr.empty-row');
+  if (emptyRow) {
+    emptyRow.scrollIntoView({ behavior:'smooth', block:'center' });
+    emptyRow.cells[0].focus();
+  }
+}
+
+function appendEmptyRowToSection(secKey) {
+  var sec = document.getElementById('s-' + _mat + '-' + secKey);
+  if (!sec) return;
+  var tbody = sec.querySelector('tbody');
+  if (!tbody) return;
+  if (tbody.querySelector('tr.empty-row')) return;
+  appendEmptyRow(tbody, _addRowLabels[secKey] || '');
+}
 var _addRowLabels = {
   inventory:   'New inventory entry',
   consumption: 'New consumption entry',
@@ -822,19 +1139,11 @@ function addStaticRow(secKey) {
   if (!sec) return;
   var tbody = sec.querySelector('tbody');
   if (!tbody) return;
-  var cols = tbody.closest('table').querySelector('thead tr').cells.length;
-  var tr = document.createElement('tr');
-  tr.classList.add('edited');
-  for (var i = 0; i < cols; i++) {
-    var td = document.createElement('td');
-    td.contentEditable = 'true';
-    td.style.cssText = 'background:var(--modified-bg);outline:none;';
-    td.setAttribute('spellcheck','false');
-    tr.appendChild(td);
+  var emptyRow = tbody.querySelector('tr.empty-row');
+  if (emptyRow) {
+    emptyRow.scrollIntoView({ behavior:'smooth', block:'center' });
+    emptyRow.cells[0].focus();
   }
-  // Insert at top (after any existing first row)
-  tbody.insertBefore(tr, tbody.firstChild);
-  tr.cells[0].focus();
 }
 
 // ── Inventory table ───────────────────────────────────────────────────
@@ -849,9 +1158,20 @@ function renderInventory() {
   }
   rows.forEach(function(r) {
     var tr = document.createElement('tr');
-    tr.innerHTML = '<td class="mono">'+r.week+'</td><td class="mono">'+r.dateLabel+'</td><td>'+r.site+'</td><td class="mono">'+r.stock.toLocaleString()+'</td><td class="mono">'+r.mt+'</td><td class="mono'+(r.dosClass?' '+r.dosClass:'')+'">'+r.dos+'</td><td></td>';
+    var siteOpts = ['Straumsvik','Rotterdam'].map(function(s){
+      return '<option value="'+s+'"'+(r.site===s?' selected':'')+'>'+s+'</option>';
+    }).join('');
+    tr.innerHTML =
+      '<td class="mono">'+r.week+'</td>'+
+      '<td class="mono">'+r.dateLabel+'</td>'+
+      '<td class="s-edit s-dd" style="position:relative;"><span>'+r.site+'</span><select style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:none;background:transparent;" onchange="this.previousElementSibling.textContent=this.value">'+siteOpts+'</select><span class="s-type-icon">expand_more</span></td>'+
+      mkNum(r.stock, r.id, 'stock', false)+
+      mkNum(parseFloat(r.mt)||0, r.id, 'mt', false)+
+      mkNum(parseInt(r.dos)||0, r.id, 'dos', false)+
+      '<td></td>';
     tb.appendChild(tr);
   });
+  appendEmptyRow(tb, 'New inventory');
 }
 
 // ── Consumption table ─────────────────────────────────────────────────
@@ -870,6 +1190,7 @@ function renderConsumption() {
     tr.innerHTML = '<td class="mono">'+r.week+'</td><td class="mono">'+r.dateLabel+'</td><td class="mono">'+r.r76+'</td><td class="mono">'+r.s76+'</td><td class="mono">'+r.r75+'</td><td class="mono">'+r.s75+'</td><td class="mono">'+r.lr75+'</td><td class="mono">'+total+'</td>';
     tb.appendChild(tr);
   });
+  appendEmptyRow(tb, 'New consumption');
 }
 var _costs = [
   { supplier:'Wanfang',   unit:'$148', freight:'$42', demurrage:'—', from:'Jan 2026', to:'Dec 2026', notes:'' },
@@ -899,7 +1220,7 @@ function selMat(mat) {
   renderCosts();
   setTimeout(wireCosts, 0);
   updateChangeCounts();
-  setTimeout(function(){ setTableView(_tableView); }, 0);
+  setTimeout(function(){ setTableView(_tableView); makeStaticTablesEditable(); }, 0);
 }
 
 // ── Sidebar section nav ───────────────────────────────────────────────
@@ -972,6 +1293,7 @@ function renderArrivals() {
     if (row.isNew) tr.classList.add('edited');
   });
   tb.querySelectorAll('td.num .cv, td.txt .cv').forEach(wireCV);
+  appendEmptyRow(tb, 'New vessel');
 }
 
 function mkNum(val, id, field, rec, max) {
@@ -1074,6 +1396,7 @@ function editCV(td) {
     if (!tr.querySelectorAll('.ce').length) tr.classList.remove('edited');
   }
   if (hasChanges()) showSave(); else hideSave();
+  checkRowCompleteness(tr);
 }
 
 function editSel(sel) {
@@ -1090,6 +1413,7 @@ function editSel(sel) {
     if (!tr.querySelectorAll('.ce').length) tr.classList.remove('edited');
   }
   if (hasChanges()) showSave(); else hideSave();
+  checkRowCompleteness(tr);
 }
 
 function step(btn, dir) {
@@ -1102,20 +1426,11 @@ function step(btn, dir) {
 }
 
 function addRow() {
-  var id = Date.now();
-  // Default ETA to start date so the new row is always visible in the current timeframe
-  var startInput = document.getElementById('tf-start');
-  var defaultEta = startInput && startInput.value ? startInput.value : '2026-05-21';
-  var d = new Date(defaultEta);
-  var mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
-  var etaLabel = mon + ' ' + d.getDate();
-  _rows.unshift({ id:id, week:'—', eta:defaultEta, etaLabel:etaLabel, supplier:'Wanfang', r76:0, s76:0, r75:0, s75:0, lr75:0, status:'ordered', notes:'', isNew:true });
-  renderArrivals();
-  // Focus the date picker of the new row
-  var dateInput = document.querySelector('#tbody-arrivals tr:first-child td.dat input[type="date"]');
-  if (dateInput) { dateInput.focus(); try { dateInput.showPicker(); } catch(e) {} }
-  _schedule['new-'+id] = { mat:'anodes', field:'new', label:'New vessel', eta:etaLabel, supplier:'Wanfang', old:'', new:'added' };
-  showSave();
+  var emptyRow = document.querySelector('#tbody-arrivals tr.empty-row');
+  if (emptyRow) {
+    emptyRow.scrollIntoView({ behavior:'smooth', block:'center' });
+    emptyRow.cells[0].focus();
+  }
 }
 
 // ── Costs table ───────────────────────────────────────────────────────
@@ -1136,6 +1451,7 @@ function renderCosts() {
     tb.appendChild(tr);
   });
   tb.querySelectorAll('td.txt .cv').forEach(wireCV);
+  appendEmptyRow(tb, 'New cost entry');
 }
 
 function wireCosts() {
@@ -1145,6 +1461,31 @@ function wireCosts() {
 }
 
 // ── Save state ────────────────────────────────────────────────────────
+function checkRowCompleteness(tr) {
+  var table = tr.closest('table');
+  if (!table) return;
+  var theadRows3 = Array.prototype.slice.call(table.querySelectorAll('thead tr'));
+  var headers = Array.prototype.slice.call(theadRows3[theadRows3.length - 1].querySelectorAll('th'));
+  var cells = Array.prototype.slice.call(tr.cells);
+  var incomplete = cells.some(function(td, i) {
+    var header = headers[i] ? headers[i].textContent.trim().toLowerCase() : '';
+    if (header === 'notes' || header === '') return false; // optional
+    // Get value depending on cell type
+    var val = '';
+    var cv = td.querySelector('.cv');
+    var sel = td.querySelector('select');
+    var inp = td.querySelector('input[type="date"]');
+    var lbl = td.querySelector('span:not(.s-type-icon):not(.steppers)');
+    if (cv) val = cv.textContent.trim();
+    else if (sel) val = sel.value;
+    else if (inp) val = inp.value;
+    else if (lbl) val = lbl.textContent.trim();
+    else val = td.textContent.trim();
+    return val === '' || val === '0';
+  });
+  tr.classList.toggle('incomplete', incomplete);
+}
+
 function hasChanges() { return Object.keys(_schedule).length > 0; }
 
 // ── Change count pills ─────────────────────────────────────────────────
@@ -1289,11 +1630,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Toggle on header click, but not if clicking a button inside it
     hdr.addEventListener('click', function(e) {
       if (e.target.closest('button')) return;
+      if (_tableView === 'detail') return;
       sec.classList.toggle('collapsed');
     });
   });
 
   selMat('anodes');
+  // Add empty rows to static tables
+  ['leadtimes','transfers','constraints'].forEach(function(sec) {
+    appendEmptyRowToSection(sec);
+  });
+  makeStaticTablesEditable();
 });
 </script>
 </body>
