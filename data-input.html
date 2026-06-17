@@ -1142,7 +1142,7 @@ function addStaticRow(secKey) {
   var emptyRow = tbody.querySelector('tr.empty-row');
   if (emptyRow) {
     emptyRow.scrollIntoView({ behavior:'smooth', block:'center' });
-    emptyRow.cells[0].focus();
+    emptyRow.click();
   }
 }
 
@@ -1429,7 +1429,7 @@ function addRow() {
   var emptyRow = document.querySelector('#tbody-arrivals tr.empty-row');
   if (emptyRow) {
     emptyRow.scrollIntoView({ behavior:'smooth', block:'center' });
-    emptyRow.cells[0].focus();
+    emptyRow.click();
   }
 }
 
